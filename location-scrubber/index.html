@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <meta name="author" content="Kevin P. , MITsdm'18">
+    <title>SafePaths MIT</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 10%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="floating-panel">
+        PrivateKit MIT Location History File: 
+        <input id=privatekitJSON type=file />
+        <input onclick="loadPath();" type=button value="Load Location History" />
+        <input onclick="saveText();" type=button value="Save Location History" />
+        <div>
+            Erase Line: <input type="checkbox" id="eraser" value="true" />
+        </div>
+    </div>
+    <div id="map"></div>
+    <script>
+        // This example adds a UI control allowing users to remove the polyline from the
+        // map.
+
+        var exposurePoints;
+        var exposurePath;
+        var exposureJSON;
+        var map;
+        var fileRegExp = new RegExp(/\.json$/);
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 14,
+                center: {lat: 42.3601, lng: -71.0942},
+                mapTypeId: 'terrain'
+            });
+        }
+
+        function loadPath() {
+            file = document.getElementById("privatekitJSON").files[0];
+            if (typeof window.FileReader !== 'function') {
+                alert("The file API isn't supported on this browser yet.");
+            }
+            else if(file === undefined || !fileRegExp.test(file.name)){
+                alert("You must choose a valid JSON file!");
+            }
+            else
+            {
+                exposurePoints = [];
+                exposurePath = [];
+                fr = new FileReader();
+                fr.onload = (function(map, points, path){
+                    return function(event){
+                        let lines = event.target.result;
+                        let lastLatLng = null;
+                        exposureJSON = JSON.parse(lines);
+
+                        exposureJSON.forEach(function(element, index){
+                            elementLatLng = new google.maps.LatLng(element.latitude, element.longitude);
+
+                            let marker = new google.maps.Marker({
+                                position: elementLatLng,
+                                label: 'ID:' + index,
+                                title: new Date(element.time * 1000).toLocaleString(),
+                                map: map
+                            });
+
+                            google.maps.event.addListener(marker,'click',function(event){
+                                if($("#eraser").prop("checked"))
+                                {
+                                    editExposure(event,this);
+                                }
+                            });
+
+                            points.push(marker);
+
+                            if(index == 0){
+                                map.setCenter(elementLatLng);
+                            }
+                            else
+                            {
+                                let polylinePath = new google.maps.Polyline({
+                                    path: [lastLatLng, elementLatLng],
+                                    strokeColor: '#FF0000',
+                                    strokeOpacity: 1.0,
+                                    strokeWeight: 2,
+                                });
+                                path.push(polylinePath);
+                                addLine(polylinePath);
+                            }
+                            lastLatLng = elementLatLng;
+                        });
+                    }
+                })(map, exposurePoints, exposurePath);
+                fr.readAsText(file);
+            }
+        }
+
+        function addPoint(marker) {
+            point.setMap(map);
+        }
+
+        function addLine(polyline) {
+            polyline.setMap(map);
+        }
+
+        function removePoint(marker) {
+            if(marker !== null)
+            {
+                marker.setMap(null);   
+            }
+        }
+
+        function removeLine(polyline) {
+            if(polyline !== null)
+            {
+                polyline.setMap(null);
+            }
+        }
+
+        function deletePoint(marker) {
+            marker = null;
+        }
+
+        function deleteLine(polyline) {
+            polyline = null;
+        }
+        
+        function editExposure(event, marker)
+        {
+            let i = 0;
+            let bFoundPath = false;
+
+            //DANGER: loop condition uses shortcutting and in-place incrementing in order to work!
+            do
+            {
+                if(exposurePoints[i] === marker)
+                {
+                    bFoundPath = true;
+                }
+            }
+            while(!bFoundPath && ++i < exposurePoints.length)
+            if(bFoundPath)
+            {
+                if(exposurePath.length > 0)
+                {
+                    //remove the line leading FROM the marked point, if it exists, and delete the object
+                    if(i < exposurePoints.length-1)
+                    {
+                        removeLine(exposurePath[i]);
+                        deleteLine(exposurePath[i]);
+                        exposurePath.splice(i,1);
+                    }
+
+                    //remove the line leading TO the marked point, if it exists, and delete the object
+                    if(i > 0)
+                    {
+                        removeLine(exposurePath[i-1]);
+                        deleteLine(exposurePath[i-1]);
+                        exposurePath.splice(i-1,1);
+                    }
+                }
+
+                //remove the marker from the map and delete the object
+                removePoint(marker);
+                deletePoint(marker);
+                exposurePoints.splice(i,1);
+                exposureJSON.splice(i,1);
+            }
+        }
+
+        function saveText(){
+
+            let text = JSON.stringify(exposureJSON);
+            let file = document.getElementById("privatekitJSON").files[0];
+            let filename = file.name.replace(fileRegExp, "-REDACTED.json");
+            var a = document.createElement('a');
+            a.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(text));
+            a.setAttribute('download', filename);
+            a.click();
+        }
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=[YOUR API KEY HERE]&callback=initMap"></script>
+  </body>
+</html>
