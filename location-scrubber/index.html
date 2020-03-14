@@ -40,6 +40,7 @@
         <input onclick="saveText();" type=button value="Save Location History" />
         <div>
             Erase Line: <input type="checkbox" id="eraser" value="true" />
+            <input onclick="compress();" type=button value="Compress Data" />
         </div>
     </div>
     <div id="map"></div>
@@ -50,6 +51,12 @@
         var exposurePoints;
         var exposurePath;
         var exposureJSON;
+
+        var temporalCompressionWindow = (60 * 1000); //1 minute in milliseconds
+        var spatialCompressionWindow = 10; //meters
+        var weightedExposurePoints;
+        var weightedExposureJSON;
+        var exposureHeatmap;
         var map;
         var fileRegExp = new RegExp(/\.json$/);
 
@@ -85,7 +92,7 @@
 
                             let marker = new google.maps.Marker({
                                 position: elementLatLng,
-                                label: 'ID:' + index,
+                                label: 'ID:' + element.id,
                                 title: new Date(element.time * 1000).toLocaleString(),
                                 map: map
                             });
@@ -130,14 +137,14 @@
         }
 
         function removePoint(marker) {
-            if(marker !== null)
+            if(marker !== undefined && marker !== null)
             {
                 marker.setMap(null);   
             }
         }
 
         function removeLine(polyline) {
-            if(polyline !== null)
+            if(polyline !== undefined && polyline !== null)
             {
                 polyline.setMap(null);
             }
@@ -167,42 +174,139 @@
             while(!bFoundPath && ++i < exposurePoints.length)
             if(bFoundPath)
             {
-                if(exposurePath.length > 0)
-                {
-                    //remove the line leading FROM the marked point, if it exists, and delete the object
-                    if(i < exposurePoints.length-1)
-                    {
-                        removeLine(exposurePath[i]);
-                        deleteLine(exposurePath[i]);
-                        exposurePath.splice(i,1);
-                    }
-
-                    //remove the line leading TO the marked point, if it exists, and delete the object
-                    if(i > 0)
-                    {
-                        removeLine(exposurePath[i-1]);
-                        deleteLine(exposurePath[i-1]);
-                        exposurePath.splice(i-1,1);
-                    }
-                }
-
-                //remove the marker from the map and delete the object
-                removePoint(marker);
-                deletePoint(marker);
-                exposurePoints.splice(i,1);
-                exposureJSON.splice(i,1);
+                deleteExposure(i,marker);
             }
         }
 
-        function saveText(){
+        function deleteExposure(i,marker){
+            if(exposurePath.length > 0)
+            {
+                //remove the line leading FROM the marked point, if it exists, and delete the object
+                if(i < exposurePoints.length-1)
+                {
+                    removeLine(exposurePath[i]);
+                    deleteLine(exposurePath[i]);
+                    exposurePath.splice(i,1);
+                }
 
-            let text = JSON.stringify(exposureJSON);
+                //remove the line leading TO the marked point, if it exists, and delete the object
+                if(i > 0)
+                {
+                    removeLine(exposurePath[i-1]);
+                    deleteLine(exposurePath[i-1]);
+                    exposurePath.splice(i-1,1);
+                }
+            }
+
+            //remove the marker from the map and delete the object
+            removePoint(marker);
+            deletePoint(marker);
+            exposurePoints.splice(i,1);
+            exposureJSON.splice(i,1);
+        }
+
+        function saveText(){
+            let redactedJSON = exposureJSON;
+            if(weightedExposureJSON !== undefined && weightedExposureJSON !== null)
+            {
+                redactedJSON = weightedExposureJSON;
+            }
+            let text = JSON.stringify(redactedJSON);
             let file = document.getElementById("privatekitJSON").files[0];
             let filename = file.name.replace(fileRegExp, "-REDACTED.json");
             var a = document.createElement('a');
             a.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(text));
             a.setAttribute('download', filename);
             a.click();
+        }
+
+        class WeightedLocation {
+            constructor(LatLng, weight) {
+                this.location = LatLng;
+                this.weight = weight;
+            }
+        }
+
+        function compress(){
+            if(exposureJSON !== undefined && exposureJSON !== null)
+            {
+                weightedExposurePoints = [];
+                weightedExposureJSON = [];
+
+                let weightIncrement = 0.5; //how much each point contributes to the compressed weight
+                let lastPoint = null;
+                let lastPointWeight = weightIncrement;
+
+                let removedIndicies = [];
+
+                exposureJSON.forEach(function(element,index){
+                    elementLatLng = new google.maps.LatLng(element.latitude, element.longitude);
+
+                    if(lastPoint !== null)
+                    {
+                        lastElementLatLng = new google.maps.LatLng(lastPoint.latitude, lastPoint.longitude);
+                    }
+
+                    //reduce to temporal and special resolution
+                    if(
+                        (lastPoint !== null && lastElementLatLng !== null)
+                            &&
+                        (element.time - lastPoint.time <= temporalCompressionWindow)
+                            &&
+                        (Math.abs(google.maps.geometry.spherical.computeDistanceBetween(lastElementLatLng,elementLatLng)) <= spatialCompressionWindow)
+                    )
+                    {
+                        //increase the weight of the last point we are going to use as we compress within the windows
+                        lastPointWeight += weightIncrement;
+
+                        //add the index for removal of the compressed points from the map
+                        removedIndicies.push(index);
+                    }
+                    else
+                    {
+                        if(lastPoint !== null && lastElementLatLng !== null)
+                        {
+                            //create the weighted data point
+                            let weighthedExposurePoint = new WeightedLocation(lastElementLatLng, lastPointWeight);
+
+                            //keep traction on the JSON and weighted points we are using
+                            weightedExposureJSON.push(lastPoint);
+                            weightedExposurePoints.push(weighthedExposurePoint);
+                        }
+
+                        //we only move the last point when we're done compressing all points in the window of the previous last element
+                        lastPoint = element;
+                    }
+                });
+
+                //finally, don't forget to include the last point!  It was either just set as a compression point or just had another point compressed into it and not yet turned into a WeightedLocation.
+                if(lastPoint !== null && lastElementLatLng !== null)
+                {
+                    //create the weighted data point
+                    let weighthedExposurePoint = new WeightedLocation(lastElementLatLng, lastPointWeight);
+
+                    //keep traction on the JSON and weighted points we are using
+                    weightedExposureJSON.push(lastPoint);
+                    weightedExposurePoints.push(weighthedExposurePoint);
+                }
+
+                let i = 0;
+                while(i = removedIndicies.pop())
+                {
+                    deleteExposure(i,exposurePoints[i]);
+                }
+
+                //remove any only compression data
+                if(exposureHeatmap !== undefined && exposureHeatmap !== null){
+                    exposureHeatmap.setMap(null);
+                    exposureHeatmap = null;
+                }
+
+                exposureHeatmap = new google.maps.visualization.HeatmapLayer({
+                    data: weightedExposurePoints
+                });
+                exposureHeatmap.setMap(map);
+            }
         }
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
