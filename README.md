@@ -1,6 +1,6 @@
 # Safe Places
 
-A toolkit for public health, built on top of data shared by users of (Private Kit)(https://github.com/tripleblindmarket/private-kit)
+A toolkit for public health, built on top of data shared by users of [Private Kit](https://github.com/tripleblindmarket/private-kit)
 
 ## Needs
 
