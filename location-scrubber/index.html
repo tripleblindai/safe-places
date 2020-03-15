@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <meta name="author" content="Kevin P. , MITsdm'18">
+    <title>SafePaths MIT</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 1%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="floating-panel">
+        PrivateKit MIT Location History File: <input id=privatekitJSON type=file /> <br />
+        <input onclick="loadPath();" type=button value="Load Location History" />
+        <input onclick="saveText();" type=button value="Save Location History" />
+        <div>
+            <div>Erase Point: <input type="checkbox" id="eraser-point" value="true" /></div>
+            <div><input onclick="selectArea();" type="button" id="eraser-area" value="Select Area" /></div>
+        </div>
+    </div>
+    <div id="map"></div>
+    <script>
+        // This example adds a UI control allowing users to remove the polyline from the
+        // map.
+
+        var exposurePoints;
+        var exposurePaths;
+        var exposureJSON;
+
+        var map;
+        var drawingManager;
+        var selectedArea;
+        var selectedAreaControls;
+        var fileRegExp = new RegExp(/\.json$/);
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 14,
+                center: {lat: 42.3601, lng: -71.0942},
+                mapTypeId: 'terrain'
+            });
+            
+            initDrawing();
+        }
+
+        function initDrawing(){
+            drawingManager = new google.maps.drawing.DrawingManager();
+            drawingManager.setDrawingMode(null);
+            drawingManager.setMap(map);
+
+            google.maps.event.addListener(drawingManager, 'rectanglecomplete', function (rectangle) {
+                drawingManager.setDrawingMode(null);
+                selectedArea = rectangle;
+                
+                let infoWindow = new google.maps.InfoWindow();
+                selectedAreaControls = infoWindow;
+
+                infoWindow.setContent('<input type="button" onclick="deleteAreaMarkers()" value="Erase Points in Area" /><br /><input type="button" onclick="deleteAreaBoundary()" value="Deselect Area" />');
+                let latLng = rectangle.getBounds().getCenter();
+                latLng.lat = rectangle.getBounds().getNorthEast().lat;
+                infoWindow.setPosition(latLng);
+                infoWindow.open(map);
+
+                google.maps.event.addListener(rectangle, 'mouseover', (function (rectangle,infoWindow) {
+                        return function(event){
+                            infoWindow.close();
+                            let latLng = rectangle.getBounds().getCenter();
+                            latLng.lat = rectangle.getBounds().getNorthEast().lat;
+                            infoWindow.setPosition(latLng);
+                            infoWindow.setPosition(latLng);
+                            infoWindow.open(map);
+                        };
+                    })(rectangle,infoWindow)
+                );
+
+                google.maps.event.addListener(rectangle, 'drag', (function (rectangle,infoWindow) {
+                        return function(event){
+                            infoWindow.close();
+                            let latLng = rectangle.getBounds().getCenter();
+                            latLng.lat = rectangle.getBounds().getNorthEast().lat;
+                            infoWindow.setPosition(latLng);
+                            infoWindow.setPosition(latLng);
+                            infoWindow.open(map);
+                        };
+                    })(rectangle,infoWindow)
+                );
+
+                google.maps.event.addListener(rectangle, 'bounds_changed', (function (rectangle,infoWindow) {
+                        return function(event){
+                            infoWindow.close();
+                            let latLng = rectangle.getBounds().getCenter();
+                            latLng.lat = rectangle.getBounds().getNorthEast().lat;
+                            infoWindow.setPosition(latLng);
+                            infoWindow.setPosition(latLng);
+                            infoWindow.open(map);
+                        };
+                    })(rectangle,infoWindow)
+                );
+            });
+        }
+
+        function selectArea() {
+            deleteAreaBoundary();
+
+            //Setting options for the Drawing Tool. In our case, enabling Polygon shape.
+            drawingManager.setOptions({
+                drawingMode : google.maps.drawing.OverlayType.RECTANGLE,
+                drawingControl : true,
+                drawingControlOptions : {
+                    position : google.maps.ControlPosition.TOP_CENTER,
+                    drawingModes : [ google.maps.drawing.OverlayType.RECTANGLE ]
+                },
+                rectangleOptions : {
+                    strokeColor : '#6c6c6c',
+                    strokeWeight : 3.5,
+                    fillColor : '#926239',
+                    fillOpacity : 0.6,
+                    editable: true,
+                    draggable: true
+                }   
+            });
+        }
+
+        function deleteAreaMarkers(){
+            if(selectedArea !== undefined && selectedArea !== null)
+            {
+                if(exposurePoints !== undefined && exposurePoints !== null)
+                {
+                    let areaBounds = selectedArea.getBounds();
+                    exposurePoints.forEach(function(element,index){
+                        if(areaBounds.contains(element.getPosition()))
+                        {
+                            deleteExposure(index, element);
+                        }
+                    });
+                }
+                deleteAreaBoundary();
+            }
+        }
+
+        function deleteAreaBoundary(){
+            if(selectedArea !== undefined && selectedArea !== null)
+            {
+                selectedArea.setMap(null);
+                selectedArea = null;
+                selectedAreaControls.close();
+                selectedAreaControls = null;
+            }
+        }
+
+        function clearMap(){
+            clearMarkers();
+            clearPolylines();
+        }
+
+        function clearMarkers(){
+            if(exposurePoints !== undefined && exposurePoints !== null){
+                exposurePoints.forEach(function(element,index){
+                    if(element !== undefined && element !== null){
+                        deleteMarker(element);
+                    }
+                });
+                exposurePoints = null;
+            }
+        }
+
+        function deleteMarker(marker) {
+            removeMarker(marker);
+            marker = null;
+        }
+
+        function clearPolylines(){
+            if(exposurePaths !== undefined && exposurePaths !== null){
+                exposurePaths.forEach(function(element,index){
+                    if(element !== undefined && element !== null){
+                        deletePolyline(element);
+                    }
+                });
+                exposurePaths = null;
+            }
+        }
+
+        function deletePolyline(polyline) {
+            removeLine(polyline);
+            polyline = null;
+        }
+
+        function clearHeatmap()
+        {
+            //remove any old compression data
+            if(exposureHeatmap !== undefined && exposureHeatmap !== null){
+                exposureHeatmap.setMap(null);
+                exposureHeatmap = null;
+            }   
+        }
+
+        function loadPath() {
+            
+            file = document.getElementById("privatekitJSON").files[0];
+            if (typeof window.FileReader !== 'function') {
+                alert("The file API isn't supported on this browser yet.");
+            }
+            else if(file === undefined || !fileRegExp.test(file.name)){
+                alert("You must choose a valid JSON file!");
+            }
+            else
+            {
+                clearMap();
+                exposurePoints = [];
+                exposurePaths = [];
+                exposureJSON = null;
+
+                fr = new FileReader();
+                fr.onload = (function(map, points, path){
+                    return function(event){
+                        let lines = event.target.result;
+                        let lastLatLng = null;
+                        exposureJSON = JSON.parse(lines);
+
+                        exposureJSON.forEach(function(element, index){
+                            elementLatLng = new google.maps.LatLng(element.latitude, element.longitude);
+
+                            let marker = new google.maps.Marker({
+                                position: elementLatLng,
+                                label: 'ID:' + element.id,
+                                title: new Date(element.time * 1000).toLocaleString(),
+                                map: map
+                            });
+
+                            google.maps.event.addListener(marker,'click',function(event){
+                                if($("#eraser-point").prop("checked"))
+                                {
+                                    editExposure(event,this);
+                                }
+                            });
+
+                            points.push(marker);
+
+                            if(index == 0){
+                                map.setCenter(elementLatLng);
+                            }
+                            else
+                            {
+                                let polylinePath = new google.maps.Polyline({
+                                    path: [lastLatLng, elementLatLng],
+                                    strokeColor: '#FF0000',
+                                    strokeOpacity: 1.0,
+                                    strokeWeight: 2,
+                                });
+                                path.push(polylinePath);
+                                addLine(polylinePath);
+                            }
+                            lastLatLng = elementLatLng;
+                        });
+                    }
+                })(map, exposurePoints, exposurePaths);
+                fr.readAsText(file);
+            }
+        }
+
+        function addMarker(marker) {
+            marker.setMap(map);
+        }
+
+        function addLine(polyline) {
+            polyline.setMap(map);
+        }
+
+        function removeMarker(marker) {
+            if(marker !== undefined && marker !== null)
+            {
+                marker.setMap(null);   
+            }
+        }
+
+        function removeLine(polyline) {
+            if(polyline !== undefined && polyline !== null)
+            {
+                polyline.setMap(null);
+            }
+        }
+        
+        function editExposure(event, marker)
+        {
+            let i = 0;
+            let bFoundPath = false;
+
+            //DANGER: loop condition uses shortcutting and in-place incrementing in order to work!
+            do
+            {
+                if(exposurePoints[i] === marker)
+                {
+                    bFoundPath = true;
+                    deleteExposure(i,marker);
+                }
+            }
+            while(!bFoundPath && ++i < exposurePoints.length)
+
+        }
+
+        function deleteExposure(i,marker){
+            if(exposurePaths.length > 0)
+            {
+                //remove the line leading FROM the marked point, if it exists, and delete the object
+                if(i < exposurePoints.length-1)
+                {
+                    removeLine(exposurePaths[i]);
+                }
+
+                //remove the line leading TO the marked point, if it exists, and delete the object
+                if(i > 0)
+                {
+                    removeLine(exposurePaths[i-1]);
+                }
+            }
+
+            //remove the marker from the map and delete the object
+            removeMarker(marker);
+
+            //handle the actual exposure data
+            exposureJSON[i].latitude = null;
+            exposureJSON[i].longitude = null;
+        }
+
+        function saveText(){            
+            let text = JSON.stringify(exposureJSON);
+            let file = document.getElementById("privatekitJSON").files[0];
+            let filename = file.name.replace(fileRegExp, "-REDACTED.json");
+            var a = document.createElement('a');
+            a.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(text));
+            a.setAttribute('download', filename);
+            a.click();
+        }
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=[YOUR API KEY HERE]&libraries=drawing&callback=initMap"></script>
+  </body>
+</html>
