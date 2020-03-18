@@ -182,7 +182,7 @@
 
         var MAP_API_KEY = localStorage.getItem("MAP_API_KEY")
 
-        if (!IsValid(MAP_API_KEY) || MAP_API_KEY == "")
+        if (!IsValid(MAP_API_KEY) || MAP_API_KEY == "" || MAP_API_KEY == null || MAP_API_KEY == "null")
             enterAPIKey();
         else {
             var script = document.createElement("script");
