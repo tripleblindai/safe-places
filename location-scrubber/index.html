@@ -182,7 +182,8 @@
 
         var MAP_API_KEY = localStorage.getItem("MAP_API_KEY")
 
-        if (!IsValid(MAP_API_KEY) || MAP_API_KEY == "" || MAP_API_KEY == null || MAP_API_KEY == "null")
+        if (!IsValid(MAP_API_KEY) || MAP_API_KEY == "" || MAP_API_KEY == null || MAP_API_KEY == "null" || MAP_API_KEY ==
+            "MAP_API_KEY")
             enterAPIKey();
         else {
             var script = document.createElement("script");
@@ -206,7 +207,7 @@
 
         function enterAPIKey() {
             MAP_API_KEY = prompt(
-                "Enter a Google Maps JavaScript API Key (this is stored in your browser only and avoids Github API throttles):",
+                "Enter a Google Maps JavaScript API Key.  You can obtain this from you support team.:",
                 "MAP_API_KEY");
             localStorage.setItem('MAP_API_KEY', MAP_API_KEY);
             location.reload();
