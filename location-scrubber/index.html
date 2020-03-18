@@ -87,6 +87,7 @@
             <div>Erase Point: <input type="checkbox" id="eraser-point" value="true" /></div>
             <div><input onclick="selectArea();" type="button" id="eraser-area" value="Select Area" /></div>
             <div><input type="button" id="zoomToExtent" class="button" onclick="zoomToExtent()" value="Zoom to Extents" /></div>
+            <div>Classify Points<input type="checkbox" id="classify"  onchange="toggleClassification()" value="Classify Points" /></div>
         </div>
     </div>
     <div id="map"></div>
@@ -135,9 +136,18 @@
 
         var exposurePoints;
         var exposurePaths;
-        var exposureGroups; //associated array of groupId to LatLngBounds objects
+        var exposureGroups; //associated array of groupId to markers, JSON elements, and LatLngBounds objects contained within each group
+        const GROUP_TYPES = {UNDEF: "undefined", RECURRING: "recurring", TRANSIENT: "transient", TRAVEL: "travel"};
         var exposureJSON;
 
+        const MARKER_ICONS = {
+            DEFAULT: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FE7569', //RED
+            GROUP: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|855dfd', //PURPLE
+            SELECTED: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|34ba46', //GREEN
+            RECURRING: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|e661ac', //PINK
+            TRANSIENT: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|ff9900', //ORANGE
+            TRAVEL: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|fdf569' //YELLOW
+            }
         var map;
         var infoWindow;
         var drawingManager;
@@ -344,7 +354,7 @@
                                 position: elementLatLng,
                                 //label: 'ID:' + element.id,
                                 title: new Date(element.time).toLocaleString(),
-                                icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FE7569',
+                                icon: MARKER_ICONS.DEFAULT,
                                 map: map
                             });
 
@@ -368,13 +378,14 @@
                             //create a new object to hold the groups if we don't have one already
                             if(exposureGroups[currentGroupId] === undefined || exposureGroups[currentGroupId] === null)
                             {
-                                exposureGroups[currentGroupId] = {markers:[],bounds:null}
+                                exposureGroups[currentGroupId] = {markers:[],elements:[],bounds:currentGroupBounds}
                             }
                             exposureGroups[currentGroupId].markers.push(marker);
+                            exposureGroups[currentGroupId].elements.push(element);
 
                             //set our current JSON element properties with our current group info
                             element.groupId = currentGroupId;
-                            element.groupType = "undetermined";
+                            element.groupType = GROUP_TYPES.UNDEF;
 
                             //we add the event listener after we determine what group the marker is in
                             google.maps.event.addListener(marker, 'click', (function(thisMarker, groupId){
@@ -387,23 +398,26 @@
                                     
                                     //when we click a marker set all the markers in that group to purple
                                     exposureGroups[groupId].markers.forEach(function(element,index){
-                                        element.setIcon('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|855dfd')
+                                        element.setIcon(MARKER_ICONS.GROUP)
                                     });
                                     //then set the clicked marker to green
-                                    thisMarker.setIcon('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|34ba46');
-                                    infoWindow.open(map,this);
+                                    thisMarker.setIcon(MARKER_ICONS.SELECTED);
                                     
                                     let uncolorColsure = (function(groupId){
                                         return function(event){
                                             exposureGroups[groupId].markers.forEach(function(element,index){
-                                                element.setIcon('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FE7569')
+                                                element.setIcon(MARKER_ICONS.DEFAULT)
                                             });
+                                            zoomToExtent();
                                         }
                                     })(groupId);
 
                                     //when we close the InfoWindow, set all the colored markers back to red
                                     google.maps.event.addListener(infoWindow, 'closeclick', uncolorColsure);
                                     google.maps.event.addListener(infoWindow, 'content_changed', uncolorColsure);
+
+                                    zoomToExtent(exposureGroups[groupId].bounds);
+                                    infoWindow.open(map,this);
                                 }
                             })(marker, currentGroupId));
 
@@ -422,7 +436,57 @@
                             lastLatLng = elementLatLng;
                         });
                         zoomToExtent();
-                        //alert(exposureGroups.length);
+
+                        let groupCount = 0;
+                        let exposureGroupKeys = Object.keys(exposureGroups);
+                        let travelGroupId = null;
+                        for(const key of exposureGroupKeys)
+                        {
+                            groupCount++;
+
+                            let foundIntersection = false;
+                            for(var i = groupCount; i < exposureGroups.length; i++)
+                            {
+                                if(exposureGroups[key].bounds.intersects(exposureGroups[exposureGroupKeys[i]].bounds))
+                                {
+                                    foundInteresection = true;
+                                    exposureGroups[key].elements.forEach(function(element,index){ element.groupType=GROUP_TYPES.RECURRING; });
+                                    exposureGroups[exposureGroupKeys[i]].elements.forEach(function(element,index){ element.groupType=GROUP_TYPES.RECURRING; });
+                                }
+                            }
+
+                            //we can only be a travel group if we were previously not found to be a recurring group, and we found no intersections with the groups in front of us
+                            if(!foundIntersection && exposureGroups[key].elements[0].groupType != GROUP_TYPES.RECURRING)
+                            {
+                                let travelMaxGroupSize = 3;
+                                if(exposureGroups[key].elements.length <= travelMaxGroupSize)
+                                {
+                                    //groupCount is currently pointing to the item in front of the current group identified by key
+                                    //  we want to check to see if the previous group (two back from current groupCount value) was a travel group.
+                                    //  If so, we set keep the current travelGroupId and use that value.
+                                    //  If not, we increment the travelGroupId and take that value instead.
+                                    //  but we only look back if we are not the first group
+                                    if(groupCount > 1)
+                                    {
+                                        if(exposureGroups[exposureGroupKeys[groupCount-2]].elements[0].groupType != GROUP_TYPES.TRAVEL)
+                                        {
+                                            if(travelGroupId === undefined || travelGroupId === null){
+                                                travelGroupId = 0;
+                                            }
+                                            else
+                                            {
+                                                travelGroupId++;
+                                            }
+                                        }
+                                    }
+                                    exposureGroups[key].elements.forEach(function(element,index){ element.groupType=GROUP_TYPES.TRAVEL;  element.travelGroupId=travelGroupId; });
+                                }
+                                else
+                                {
+                                    exposureGroups[key].elements.forEach(function(element,index){ element.groupType=GROUP_TYPES.TRANSIENT; });
+                                }
+                            }
+                        }
                     }
                 })(map, exposurePoints, exposurePaths);
                 fr.readAsText(file);
@@ -431,17 +495,47 @@
             }
         }
 
-        function zoomToExtent(){
-            if(exposurePoints !== undefined && exposurePoints !== null){
-                let mapBounds = new google.maps.LatLngBounds();
-                exposurePoints.forEach(function(element,index){
-                    if(element.getMap() !== null){
-                        mapBounds.extend(element.getPosition());
+        function toggleClassification(){
+            infoWindow.close();
+            zoomToExtent();
+            let markerIcon = MARKER_ICONS.DEFAULT;
+
+            let exposureGroupKeys = Object.keys(exposureGroups);
+            for(const key of exposureGroupKeys)
+            {
+                if($("#classify").prop("checked")){
+                    let groupType = exposureGroups[key].elements[0].groupType;
+                    if(groupType == GROUP_TYPES.RECURRING)
+                    {
+                        markerIcon = MARKER_ICONS.RECURRING;
                     }
-                });
-                map.setCenter(mapBounds.getCenter());
-                map.fitBounds(mapBounds);
+                    else if(groupType == GROUP_TYPES.TRANSIENT)
+                    {
+                        markerIcon = MARKER_ICONS.TRANSIENT;
+                    }
+                    else if(groupType == GROUP_TYPES.TRAVEL)
+                    {
+                        markerIcon = MARKER_ICONS.TRAVEL;
+                    }
+                }
+                exposureGroups[key].markers.forEach(function(element,index){ element.setIcon(markerIcon); })
             }
+        }
+
+        function zoomToExtent(mapBounds){
+            if(mapBounds === undefined || mapBounds === null)
+            {
+                if(exposurePoints !== undefined && exposurePoints !== null){
+                    mapBounds = new google.maps.LatLngBounds();
+                    exposurePoints.forEach(function(element,index){
+                        if(element.getMap() !== null){
+                            mapBounds.extend(element.getPosition());
+                        }
+                    });
+                }
+            }
+            map.setCenter(mapBounds.getCenter());
+            map.fitBounds(mapBounds);
         }
 
         function addMarker(marker) {
