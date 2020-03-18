@@ -80,12 +80,13 @@
         <input id="privatekitJSON" style="display:none;" type="file" onchange="loadPath()" />
 
         <input class="button" type="button" id="loadFileXml" value="Load"
-            onclick="document.getElementById('privatekitJSON').click();" />
+            onclick="$('#privatekitJSON').click();" />
         <input id="save" class="button disabled" disabled="disabled" onclick="saveText();" type=button value="Save" />
         <hr />
         <div>
             <div>Erase Point: <input type="checkbox" id="eraser-point" value="true" /></div>
             <div><input onclick="selectArea();" type="button" id="eraser-area" value="Select Area" /></div>
+            <div><input type="button" id="zoomToExtent" class="button" onclick="zoomToExtent()" value="Zoom to Extents" /></div>
         </div>
     </div>
     <div id="map"></div>
@@ -110,7 +111,7 @@
             script.async = true;
             script.defer = true;
             script.src =
-                "https://maps.googleapis.com/maps/api/js?key=" + MAP_API_KEY + "&libraries=drawing&callback=initMap";
+                "https://maps.googleapis.com/maps/api/js?key=" + MAP_API_KEY + "&libraries=drawing,geometry&callback=initMap";
             document.head.appendChild(script);
 
 
@@ -132,15 +133,17 @@
             location.reload();
         }
 
-
         var exposurePoints;
         var exposurePaths;
+        var exposureGroups; //associated array of groupId to LatLngBounds objects
         var exposureJSON;
 
         var map;
+        var infoWindow;
         var drawingManager;
         var selectedArea;
         var selectedAreaControls;
+        var selectedMarker;
         var fileRegExp = new RegExp(/\.json$/);
 
         function initMap() {
@@ -151,6 +154,16 @@
                     lng: -71.0942
                 },
                 mapTypeId: 'terrain'
+            });
+
+            infoWindow = new google.maps.InfoWindow();
+
+            google.maps.event.addListenerOnce(map, 'bounds_changed', function(event) {
+                this.setZoom(map.getZoom()-1);
+
+                if (this.getZoom() > 15) {
+                    this.setZoom(15);
+                }
             });
 
             initDrawing();
@@ -303,7 +316,7 @@
 
         function loadPath() {
 
-            file = document.getElementById("privatekitJSON").files[0];
+            file = $("#privatekitJSON").get(0).files[0];
             if (typeof window.FileReader !== 'function') {
                 alert("The file API isn't supported on this browser yet.");
             } else if (file === undefined || !fileRegExp.test(file.name)) {
@@ -312,6 +325,7 @@
                 clearMap();
                 exposurePoints = [];
                 exposurePaths = [];
+                exposureGroups = [];
                 exposureJSON = null;
 
                 fr = new FileReader();
@@ -319,30 +333,82 @@
                     return function (event) {
                         let lines = event.target.result;
                         let lastLatLng = null;
+                        let currentGroupId = 0;
+                        let currentGroupBounds = new google.maps.LatLngBounds();
                         exposureJSON = JSON.parse(lines);
 
                         exposureJSON.forEach(function (element, index) {
-                            elementLatLng = new google.maps.LatLng(element.latitude, element
-                                .longitude);
+                            elementLatLng = new google.maps.LatLng(element.latitude, element.longitude);                            
 
                             let marker = new google.maps.Marker({
                                 position: elementLatLng,
-                                label: 'ID:' + element.id,
-                                title: new Date(element.time * 1000).toLocaleString(),
+                                //label: 'ID:' + element.id,
+                                title: new Date(element.time).toLocaleString(),
+                                icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FE7569',
                                 map: map
-                            });
-
-                            google.maps.event.addListener(marker, 'click', function (event) {
-                                if ($("#eraser-point").prop("checked")) {
-                                    editExposure(event, this);
-                                }
                             });
 
                             points.push(marker);
 
-                            if (index == 0) {
-                                map.setCenter(elementLatLng);
-                            } else {
+                            //create a circle with which to measure a 100' radius from the center of our current bounds
+                            if(!currentGroupBounds.isEmpty() && (google.maps.geometry.spherical.computeDistanceBetween(elementLatLng, currentGroupBounds.getCenter()) > 30.48))
+                            {
+                                //save off the previous group for later evaluation as recurring or transient
+                                exposureGroups[currentGroupId].bounds = currentGroupBounds;
+
+                                //increment the groupId
+                                ++currentGroupId;
+
+                                //create a new group bound and add current location to that group
+                                currentGroupBounds = new google.maps.LatLngBounds()
+                            }
+                            //just add this location to our group bounds in order to update the center of the group appropriately
+                            currentGroupBounds.extend(elementLatLng);
+
+                            //create a new object to hold the groups if we don't have one already
+                            if(exposureGroups[currentGroupId] === undefined || exposureGroups[currentGroupId] === null)
+                            {
+                                exposureGroups[currentGroupId] = {markers:[],bounds:null}
+                            }
+                            exposureGroups[currentGroupId].markers.push(marker);
+
+                            //set our current JSON element properties with our current group info
+                            element.groupId = currentGroupId;
+                            element.groupType = "undetermined";
+
+                            //we add the event listener after we determine what group the marker is in
+                            google.maps.event.addListener(marker, 'click', (function(thisMarker, groupId){
+                                return function (event) {
+                                    /*if ($("#eraser-point").prop("checked")) {
+                                        editExposure(event, this);
+                                    }*/
+                                    selectedMarker = thisMarker;
+                                    infoWindow.setContent('<input type="button" onclick="erasePoint(event);" value="Erase Selected Point" /><br /><input type="button" onclick="eraseGroup(event, '+  groupId +');" value="Erase Selected Group" />');
+                                    
+                                    //when we click a marker set all the markers in that group to purple
+                                    exposureGroups[groupId].markers.forEach(function(element,index){
+                                        element.setIcon('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|855dfd')
+                                    });
+                                    //then set the clicked marker to green
+                                    thisMarker.setIcon('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|34ba46');
+                                    infoWindow.open(map,this);
+                                    
+                                    let uncolorColsure = (function(groupId){
+                                        return function(event){
+                                            exposureGroups[groupId].markers.forEach(function(element,index){
+                                                element.setIcon('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FE7569')
+                                            });
+                                        }
+                                    })(groupId);
+
+                                    //when we close the InfoWindow, set all the colored markers back to red
+                                    google.maps.event.addListener(infoWindow, 'closeclick', uncolorColsure);
+                                    google.maps.event.addListener(infoWindow, 'content_changed', uncolorColsure);
+                                }
+                            })(marker, currentGroupId));
+
+                            if(lastLatLng !== undefined && lastLatLng !== null)
+                            {
                                 let polylinePath = new google.maps.Polyline({
                                     path: [lastLatLng, elementLatLng],
                                     strokeColor: '#FF0000',
@@ -352,13 +418,29 @@
                                 path.push(polylinePath);
                                 addLine(polylinePath);
                             }
+
                             lastLatLng = elementLatLng;
                         });
+                        zoomToExtent();
+                        //alert(exposureGroups.length);
                     }
                 })(map, exposurePoints, exposurePaths);
                 fr.readAsText(file);
 
-                document.getElementById("save").classList += " enabled";
+                $("#save").removeClass("disabled").addClass("enabled").prop("disabled", false);
+            }
+        }
+
+        function zoomToExtent(){
+            if(exposurePoints !== undefined && exposurePoints !== null){
+                let mapBounds = new google.maps.LatLngBounds();
+                exposurePoints.forEach(function(element,index){
+                    if(element.getMap() !== null){
+                        mapBounds.extend(element.getPosition());
+                    }
+                });
+                map.setCenter(mapBounds.getCenter());
+                map.fitBounds(mapBounds);
             }
         }
 
@@ -380,6 +462,18 @@
             if (polyline !== undefined && polyline !== null) {
                 polyline.setMap(null);
             }
+        }
+
+        function erasePoint(event)
+        {
+            if(selectedMarker !== undefined && selectedMarker !== null)
+            {
+                editExposure(event, selectedMarker);
+            }
+        }
+
+        function eraseGroup(event, groupId){
+            exposureGroups[groupId].markers.forEach(function(element,index){ editExposure(event, element) });
         }
 
         function editExposure(event, marker) {
@@ -420,7 +514,7 @@
 
         function saveText() {
             let text = JSON.stringify(exposureJSON);
-            let file = document.getElementById("privatekitJSON").files[0];
+            let file = $("#privatekitJSON").get(0).files[0];
             let filename = file.name.replace(fileRegExp, "-REDACTED.json");
             var a = document.createElement('a');
             a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
