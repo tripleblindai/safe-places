@@ -140,6 +140,7 @@
 
         <input class="button" type="button" id="loadFileXml" value="Load" onclick="$('#privatekitJSON').click();" />
         <input id="save" class="button disabled" disabled="disabled" onclick="saveText();" type=button value="Save" />
+        <div id="stats">Visible: <span id="visible">0</span> Hidden: <span id="hidden">0</span> Deleted: <span id="deleted">0</span> Total: <span id="total">0</span></div>
         <hr />
         <div>
             <button class="btn" onclick="selectNone()" id="select-point">
@@ -148,7 +149,6 @@
                 <i class="fa fa-object-group"></i> Select Area</button>
             <button class="btn" onclick="selectNone();" id="select-none">
                 <i class="fa fa-ban"></i> Select None</button>&nbsp;
-
             <p />
             <div style="padding:8px;">
                 <label for="dates">Date Range:</label>
@@ -168,8 +168,6 @@
     </div>
     <div id="map"></div>
     <script>
-        // This example adds a UI control allowing users to remove the polyline from the
-        // map.
         function isDefined(parameter) {
             return !(typeof (parameter) === "undefined");
         }
@@ -178,8 +176,7 @@
             return isDefined(parameter) && (parameter != null);
         }
 
-
-        var MAP_API_KEY = localStorage.getItem("MAP_API_KEY")
+        var MAP_API_KEY = localStorage.getItem("MAP_API_KEY");
 
         if (!isInitalized(MAP_API_KEY) || MAP_API_KEY == "" || MAP_API_KEY == null || MAP_API_KEY == "null" || MAP_API_KEY ==
             "MAP_API_KEY")
@@ -611,6 +608,7 @@
                         //auto-classify all points
                         toggleClassification();
                         initDateSlider(exposureJSON[0].time,exposureJSON[exposureJSON.length-1].time);
+                        updateStats();
                     };
                 })(map, exposurePoints, exposurePaths);
                 fr.readAsText(file);
@@ -661,6 +659,7 @@
                                     }
                                 }
                             });
+                            updateStats();
                         };
                     })(startDateMilliseconds,incrementFactor)
                 });
@@ -729,6 +728,7 @@
                         }
                     }
             }
+            updateStats();
         }
 
         function toggleClassification() {
@@ -862,6 +862,45 @@
             //handle the actual exposure data
             exposureJSON[i].latitude = null;
             exposureJSON[i].longitude = null;
+            updateStats();
+        }
+
+        function updateStats(){
+            let statsElement = $("#stats");
+            let loadedElement = $("#loaded",statsElement);
+            let visibleCount = 0;
+            let hiddenCount = 0;
+            let deletedCount = 0;
+            let totalCount = 0;
+            let visibleElement = $("#visible",statsElement);
+            let hiddenElement = $("#hidden",statsElement);
+            let deletedElement = $("#deleted",statsElement);
+            let totalElement = $("#total",statsElement);
+            if(loadedElement.length == 0)
+            {
+                loadedElement = $("<div />").prop("id","loaded").html("Loaded: "+ exposureJSON.length +"")
+                statsElement.prepend(loadedElement);
+            }
+            exposureJSON.forEach(function(element,index){
+                if(!isInitalized(element.latitude) || !isInitalized(element.longitude))
+                {
+                    deletedCount++;
+                }
+                else if(isInitalized(exposurePoints[index].getMap()))
+                {
+                    visibleCount++;
+                }
+                else
+                {
+                    hiddenCount++;
+                }
+            });
+            
+            totalCount = visibleCount+deletedCount+hiddenCount;
+            visibleElement.html(+visibleCount);
+            hiddenElement.html(+hiddenCount);
+            deletedElement.html(+deletedCount);
+            totalElement.html(+totalCount);
         }
 
         function saveText() {
@@ -869,7 +908,7 @@
             // the import format, just missing the redacted points.
             let out = [];
             for (var i = 0; i < exposureJSON.length; i++) {
-                if (exposureJSON[i].latitude && exposureJSON[i].longitude) {
+                if(isInitalized(exposureJSON[i].latitude) && isInitalized(exposureJSON[i].longitude) && isInitalized(exposurePoints[i].getMap())) {
                     element = {};
                     element.time = exposureJSON[i].time;
                     element.longitude = exposureJSON[i].longitude;
