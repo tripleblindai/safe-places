@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
-
 <head>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <meta name="author" content="Kevin P. , MITsdm'18">
     <title>SafePaths MIT</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> 
     <style>
         /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
@@ -148,41 +150,35 @@
                 <i class="fa fa-ban"></i> Select None</button>&nbsp;
 
             <p />
-
+            <div style="padding:8px;">
+                <label for="dates">Date Range:</label>
+                <input type="text" id="dates" readonly style="border:0; color:#999999;">
+                <div id="slider-range"></div>
+            </div>
             <button class="btn btn_delete disabled" onclick="deleteAll()" id="delete-all-btn">
                 <i class="fa fa-trash-alt"></i> Delete All</button>
             <button class="btn btn_delete disabled" onclick="deleteSelectedMarker()" id="delete-btn">
                 <i class="fa fa-trash-alt"></i> Delete</button>
             <button class="btn btn_view" onclick="zoomToExtent()" id="zoomToExtent">
                 <i class="fas fa-expand-arrows-alt"></i> Zoom</button>
-
-            <!-- No more "erase mode", use Delete button after picking
-                <div>Erase Point: <input type="checkbox" id="eraser-point" value="true" /></div>
-            -->
-
-            <!-- Classify all the time
-                
-                div>Classify Points<input type="checkbox" id="classify" onchange="toggleClassification()"
-                    value="Classify Points" /></div>
-            -->
         </div>
     </div>
     <div id="map"></div>
     <script>
         // This example adds a UI control allowing users to remove the polyline from the
         // map.
-        function IsDefined(parameter) {
+        function isDefined(parameter) {
             return !(typeof (parameter) === "undefined");
         }
 
-        function IsValid(parameter) {
-            return IsDefined(parameter) && (parameter != null);
+        function isInitalized(parameter) {
+            return isDefined(parameter) && (parameter != null);
         }
 
 
         var MAP_API_KEY = localStorage.getItem("MAP_API_KEY")
 
-        if (!IsValid(MAP_API_KEY) || MAP_API_KEY == "" || MAP_API_KEY == null || MAP_API_KEY == "null" || MAP_API_KEY ==
+        if (!isInitalized(MAP_API_KEY) || MAP_API_KEY == "" || MAP_API_KEY == null || MAP_API_KEY == "null" || MAP_API_KEY ==
             "MAP_API_KEY")
             enterAPIKey();
         else {
@@ -215,8 +211,7 @@
 
         var exposurePoints;
         var exposurePaths;
-        var
-            exposureGroups; //associated array of groupId to markers, JSON elements, and LatLngBounds objects contained within each group
+        var exposureGroups; //associative array of groupId to markers, JSON elements, and LatLngBounds objects contained within each group
         const GROUP_TYPES = {
             UNDEF: "undefined",
             RECURRING: "recurring",
@@ -226,15 +221,16 @@
         var exposureJSON;
 
         const MARKER_ICONS = {
-            DEFAULT: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FE7569', //RED
-            GROUP: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|855dfd', //PURPLE
-            SELECTED: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|34ba46', //GREEN
-            RECURRING: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|e661ac', //PINK
-            TRANSIENT: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|ff9900', //ORANGE
-            TRAVEL: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|fdf569' //YELLOW
+            DEFAULT: 'https://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FE7569', //RED
+            GROUP: 'https://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|855dfd', //PURPLE
+            SELECTED: 'https://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|34ba46', //GREEN
+            RECURRING: 'https://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|e661ac', //PINK
+            TRANSIENT: 'https://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|ff9900', //ORANGE
+            TRAVEL: 'https://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|fdf569' //YELLOW
         }
         var map;
-        var infoWindow;
+        //May still have use for geo-coding
+        //var infoWindow;
         var drawingManager;
         var selectedArea;
         var selectedAreaControls;
@@ -253,7 +249,7 @@
                 mapTypeId: 'terrain'
             });
 
-            infoWindow = new google.maps.InfoWindow();
+            //infoWindow = new google.maps.InfoWindow();
 
             google.maps.event.addListenerOnce(map, 'bounds_changed', function (event) {
                 this.setZoom(map.getZoom() - 1);
@@ -274,52 +270,6 @@
             google.maps.event.addListener(drawingManager, 'rectanglecomplete', function (rectangle) {
                 drawingManager.setDrawingMode(null);
                 selectedArea = rectangle;
-
-                /* SSP: Removing infowindow
-                let infoWindow = new google.maps.InfoWindow();
-                selectedAreaControls = infoWindow;
-
-                infoWindow.setContent(
-                    '<input type="button" onclick="deleteAreaMarkers()" value="Erase Points in Area" /><br /><input type="button" onclick="deleteAreaBoundary()" value="Deselect Area" />'
-                );
-                let latLng = rectangle.getBounds().getCenter();
-                latLng.lat = rectangle.getBounds().getNorthEast().lat;
-                infoWindow.setPosition(latLng);
-                infoWindow.open(map);
-                */
-
-                google.maps.event.addListener(rectangle, 'mouseover', (function (rectangle, infoWindow) {
-                    return function (event) {
-                        //x infoWindow.close();
-                        let latLng = rectangle.getBounds().getCenter();
-                        latLng.lat = rectangle.getBounds().getNorthEast().lat;
-                        //x infoWindow.setPosition(latLng);
-                        //x infoWindow.setPosition(latLng);
-                        //x infoWindow.open(map);
-                    };
-                })(rectangle, infoWindow));
-
-                google.maps.event.addListener(rectangle, 'drag', (function (rectangle, infoWindow) {
-                    return function (event) {
-                        //x infoWindow.close();
-                        let latLng = rectangle.getBounds().getCenter();
-                        latLng.lat = rectangle.getBounds().getNorthEast().lat;
-                        //x infoWindow.setPosition(latLng);
-                        //x infoWindow.setPosition(latLng);
-                        //x infoWindow.open(map);
-                    };
-                })(rectangle, infoWindow));
-
-                google.maps.event.addListener(rectangle, 'bounds_changed', (function (rectangle, infoWindow) {
-                    return function (event) {
-                        //x infoWindow.close();
-                        let latLng = rectangle.getBounds().getCenter();
-                        latLng.lat = rectangle.getBounds().getNorthEast().lat;
-                        //x infoWindow.setPosition(latLng);
-                        //x infoWindow.setPosition(latLng);
-                        //x infoWindow.open(map);
-                    };
-                })(rectangle, infoWindow));
 
                 document.getElementById("select-area").classList.remove("pressed");
                 enableDelete(true, false);
@@ -370,8 +320,8 @@
         }
 
         function deleteAreaMarkers() {
-            if (IsValid(selectedArea)) {
-                if (IsValid(exposurePoints)) {
+            if (isInitalized(selectedArea)) {
+                if (isInitalized(exposurePoints)) {
                     let areaBounds = selectedArea.getBounds();
                     exposurePoints.forEach(function (element, index) {
                         if (areaBounds.contains(element.getPosition())) {
@@ -385,14 +335,14 @@
 
         function deleteAreaBoundary() {
             // Remove any selection area
-            if (selectedArea !== undefined && selectedArea !== null) {
+            if (isInitalized(selectedArea)) {
                 selectedArea.setMap(null);
                 selectedArea = null;
+            }
 
-                if (IsValid(selectedAreaControls)) {
-                    selectedAreaControls.close();
-                    selectedAreaControls = null;
-                }
+            if (isInitalized(selectedAreaControls)) {
+                selectedAreaControls.close();
+                selectedAreaControls = null;
             }
 
             enableDelete(false, false);
@@ -408,9 +358,9 @@
         }
 
         function clearMarkers() {
-            if (exposurePoints !== undefined && exposurePoints !== null) {
+            if (isInitalized(exposurePoints)) {
                 exposurePoints.forEach(function (element, index) {
-                    if (element !== undefined && element !== null) {
+                    if (isInitalized(element)) {
                         deleteMarker(element);
                     }
                 });
@@ -419,7 +369,7 @@
         }
 
         function deleteAll() {
-            if (IsValid(selectedArea)) {
+            if (isInitalized(selectedArea)) {
                 deleteAreaMarkers();
             } else {
                 eraseGroup(null, selectedGroupID);
@@ -435,9 +385,9 @@
         }
 
         function clearPolylines() {
-            if (exposurePaths !== undefined && exposurePaths !== null) {
+            if (isInitalized(exposurePaths)) {
                 exposurePaths.forEach(function (element, index) {
-                    if (element !== undefined && element !== null) {
+                    if (isInitalized(element)) {
                         deletePolyline(element);
                     }
                 });
@@ -450,28 +400,26 @@
             polyline = null;
         }
 
-        function clearHeatmap() {
-            //remove any old compression data
-            if (exposureHeatmap !== undefined && exposureHeatmap !== null) {
-                exposureHeatmap.setMap(null);
-                exposureHeatmap = null;
-            }
-        }
-
         function enableDelete(all, single) {
 
-            var btnDeleteAll = document.getElementById("delete-all-btn");
-            var btnDelete = document.getElementById("delete-btn");
+            let btnDeleteAll = $("#delete-all-btn");
+            let btnDelete = $("#delete-btn");
 
-            if (all)
-                btnDeleteAll.classList.remove("disabled");
+            if(all){
+                btnDeleteAll.removeClass("disabled");
+            }
             else
-                btnDeleteAll.classList.add("disabled");
+            {
+                btnDeleteAll.addClass("disabled");
+            }
 
-            if (single)
-                btnDelete.classList.remove("disabled");
+            if(single){
+                btnDelete.removeClass("disabled");
+            }
             else
-                btnDelete.classList.add("disabled");
+            {
+                btnDelete.addClass("disabled");
+            }
         }
 
         function loadPath() {
@@ -496,17 +444,14 @@
                         let currentGroupId = 0;
                         let currentGroupBounds = new google.maps.LatLngBounds();
                         exposureJSON = JSON.parse(lines);
-
+                        
                         exposureJSON.forEach(function (element, index) {
                             elementLatLng = new google.maps.LatLng(element.latitude, element
                                 .longitude);
-
+                            
                             let marker = new google.maps.Marker({
                                 position: elementLatLng,
-                                //label: 'ID:' + element.id,
-                                title: new Date(Math.trunc(element.time /
-                                    1000)) // convert to UCT unix to a "human" time.  TODO: Local time conversion needed?
-                                    .toLocaleString(),
+                                title: new Date(element.time).toLocaleString(), //convert to UCT unix to a "human" time with local time conversion
                                 icon: MARKER_ICONS.DEFAULT,
                                 map: map
                             });
@@ -549,17 +494,6 @@
                             google.maps.event.addListener(marker, 'click', (function (thisMarker,
                                 groupId) {
                                 return function (event) {
-                                    /*if ($("#eraser-point").prop("checked")) {
-                                        editExposure(event, this);
-                                    }*/
-
-                                    /* SSP: Disable infowindow use                                    
-                                    infoWindow.setContent(
-                                        '<input type="button" onclick="erasePoint(event);" value="Erase Selected Point" /><br /><input type="button" onclick="eraseGroup(event, ' +
-                                        groupId +
-                                        ');" value="Erase Selected Group" />');
-                                    */
-
                                     selectNone();
                                     enableDelete(false);
 
@@ -583,26 +517,14 @@
                                                         )
                                                     });
 
-                                            // After the load, zoom to see all
-                                            // zoomToExtent();
-                                            //x selectedMarker = null;
-                                            if (groupId ==
-                                                selectedGroupID)
+                                            if (groupId == selectedGroupID) {
                                                 selectedGroupID = null;
+                                            }
 
                                             enableDelete(false, false);
-                                        }
+                                        };
                                     })(groupId);
 
-                                    //when we close the InfoWindow, set all the colored markers back to red
-                                    //x google.maps.event.addListener(infoWindow,
-                                    //x     'closeclick', uncolorColsure);
-                                    //x google.maps.event.addListener(infoWindow,
-                                    //x     'content_changed', uncolorColsure);
-
-                                    // zoomToExtent(exposureGroups[groupId].bounds);
-
-                                    //x infoWindow.open(map, this);
                                     selectedGroupID = groupId;
                                     selectedMarker = thisMarker;
                                     global_uncolorClosure = uncolorColsure;
@@ -614,7 +536,7 @@
                                 }
                             })(marker, currentGroupId));
 
-                            if (lastLatLng !== undefined && lastLatLng !== null) {
+                            if (isInitalized(lastLatLng)) {
                                 let polylinePath = new google.maps.Polyline({
                                     path: [lastLatLng, elementLatLng],
                                     strokeColor: '#FF0000',
@@ -683,25 +605,75 @@
                                 }
                             }
                         }
-                    }
+                        //auto-classify all points
+                        toggleClassification();
+                        initDateSlider(exposureJSON[0].time,exposureJSON[exposureJSON.length-1].time);
+                    };
                 })(map, exposurePoints, exposurePaths);
                 fr.readAsText(file);
 
                 $("#save").removeClass("disabled").addClass("enabled").prop("disabled", false);
-
-                // Auto-classify (no reason not to do this)
-                toggleClassification();
             }
         }
 
+        function initDateSlider(startDateMilliseconds,endDateMillieconds){
+
+            let utcSecondsToMidnight = function(utcSeconds){
+                date = new Date(utcSeconds);
+                date.setHours(0);
+                date.setMinutes(0);
+                date.setSeconds(0);
+                return date.getTime();
+            };
+
+            startDateMilliseconds = utcSecondsToMidnight(startDateMilliseconds);
+            endDateMillieconds = utcSecondsToMidnight(endDateMillieconds);
+
+            let incrementFactor = (1000*60*60*24); //milliseconds in one day
+            let dateRange = Math.ceil((endDateMillieconds - startDateMilliseconds)/incrementFactor)+1; //number of days to have the slider cover (has to be +1 because we take the end date and move back to midnight)
+
+            $(function(){
+                $("#slider-range").slider({
+                range: true,
+                min: 0,
+                max: dateRange,
+                values: [ 0, dateRange ],
+                slide: (function(startDateMilliseconds, incrementFactor){
+                        return function(event, ui) {
+                            let startWindowMilliseconds = startDateMilliseconds + (ui.values[0]*incrementFactor);
+                            let endWindowMilliseconds = startDateMilliseconds + (ui.values[1]*incrementFactor);
+                            $("#dates").val(new Date(startWindowMilliseconds).toLocaleDateString() +" - "+ new Date(endWindowMilliseconds).toLocaleDateString());
+                            exposureJSON.forEach(function(element,index){
+                                //hide all markers if the exposure timestamp is outside the window
+                                if((element.time < startWindowMilliseconds || element.time > endWindowMilliseconds))
+                                {
+                                    removeMarker(exposurePoints[index]);
+                                }
+                                else
+                                {
+                                    //show all markers, if they have not been redacted via deletion
+                                    if(isInitalized(element.latitude) && isInitalized(element.longitude))
+                                    {
+                                        addMarker(exposurePoints[index]);
+                                    }
+                                }
+                            });
+                        };
+                    })(startDateMilliseconds,incrementFactor)
+                });
+                
+                let startDateString = new Date(startDateMilliseconds + $("#slider-range").slider("values",0)*incrementFactor).toLocaleDateString();
+                let endDateString = new Date(startDateMilliseconds + $("#slider-range").slider("values",1)*incrementFactor).toLocaleDateString();
+                $("#dates").val(startDateString +" - "+ endDateString);
+            });
+        }
+
         function toggleClassification() {
-            //x infoWindow.close();
-            // zoomToExtent();
             let markerIcon = MARKER_ICONS.DEFAULT;
 
             let exposureGroupKeys = Object.keys(exposureGroups);
             for (const key of exposureGroupKeys) {
-                if ($("#classify").prop("checked")) {
+                //if ($("#classify").prop("checked")) {
                     let groupType = exposureGroups[key].elements[0].groupType;
                     if (groupType == GROUP_TYPES.RECURRING) {
                         markerIcon = MARKER_ICONS.RECURRING;
@@ -710,7 +682,7 @@
                     } else if (groupType == GROUP_TYPES.TRAVEL) {
                         markerIcon = MARKER_ICONS.TRAVEL;
                     }
-                }
+                //}
                 exposureGroups[key].markers.forEach(function (element, index) {
                     element.setIcon(markerIcon);
                 })
@@ -721,11 +693,11 @@
             // Zoom to the extent of the selection or the extent of all points
 
             if (mapBounds === undefined || mapBounds === null) {
-                if (IsValid(selectedGroupID))
+                if (isInitalized(selectedGroupID))
                     return zoomToGroup(selectedGroupID);
                 else if (selectedArea)
                     return zoomToArea();
-                else if (IsValid(exposurePoints)) {
+                else if (isInitalized(exposurePoints)) {
                     mapBounds = new google.maps.LatLngBounds();
                     exposurePoints.forEach(function (element, index) {
                         if (element.getMap() !== null) {
@@ -769,19 +741,19 @@
         }
 
         function removeMarker(marker) {
-            if (marker !== undefined && marker !== null) {
+            if (isInitalized(marker)) {
                 marker.setMap(null);
             }
         }
 
         function removeLine(polyline) {
-            if (IsValid(polyline)) {
+            if (isInitalized(polyline)) {
                 polyline.setMap(null);
             }
         }
 
         function erasePoint(event) {
-            if (IsValid(selectedMarker)) {
+            if (isInitalized(selectedMarker)) {
                 editExposure(event, selectedMarker);
             }
         }
@@ -857,7 +829,6 @@
             //saveAs(blob, filename);
         }
     </script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 </body>
 
 </html>
