@@ -156,7 +156,7 @@
                 <div id="slider-range"></div>
             </div>
             <div style="padding:8px;">
-                <span>Hide Groups of </span><input type="checkbox" id="hide-travel" onchange="toggleGroups()" /> Travel <input type="checkbox" id="hide-15" onchange="toggleGroups()" /> 15min <input type="checkbox" id="hide-30" onchange="toggleGroups()" /> 30min <input type="checkbox" id="hide-60" onchange="toggleGroups()" /> 1hr
+                <span>Hide Groups of </span><input type="checkbox" id="hide-travel" onchange="updateExposurePoints()" /> Travel <input type="checkbox" id="hide-15" onchange="updateExposurePoints()" /> 15min <input type="checkbox" id="hide-30" onchange="updateExposurePoints()" /> 30min <input type="checkbox" id="hide-60" onchange="updateExposurePoints()" /> 1hr
             </div>
             <button class="btn btn_delete disabled" onclick="deleteAll()" id="delete-all-btn">
                 <i class="fa fa-trash-alt"></i> Delete All</button>
@@ -237,6 +237,8 @@
         var selectedMarker;
         var global_uncolorClosure = null;
         var selectedGroupID = null;
+        var visualizationWindowStartMilliseconds;
+        var visualizationWindowEndMilliseconds;
         var fileRegExp = new RegExp(/\.json$/);
 
         function initMap() {
@@ -641,25 +643,10 @@
                 values: [ 0, dateRange ],
                 slide: (function(startDateMilliseconds, incrementFactor){
                         return function(event, ui) {
-                            let startWindowMilliseconds = startDateMilliseconds + (ui.values[0]*incrementFactor);
-                            let endWindowMilliseconds = startDateMilliseconds + (ui.values[1]*incrementFactor);
-                            $("#dates").val(new Date(startWindowMilliseconds).toLocaleDateString() +" - "+ new Date(endWindowMilliseconds).toLocaleDateString());
-                            exposureJSON.forEach(function(element,index){
-                                //hide all markers if the exposure timestamp is outside the window
-                                if((element.time < startWindowMilliseconds || element.time > endWindowMilliseconds))
-                                {
-                                    removeMarker(exposurePoints[index]);
-                                }
-                                else
-                                {
-                                    //show all markers, if they have not been redacted via deletion
-                                    if(isInitalized(element.latitude) && isInitalized(element.longitude))
-                                    {
-                                        addMarker(exposurePoints[index]);
-                                    }
-                                }
-                            });
-                            updateStats();
+                            visualizationWindowStartMilliseconds = startDateMilliseconds + (ui.values[0]*incrementFactor);
+                            visualizationWindowEndMilliseconds = startDateMilliseconds + (ui.values[1]*incrementFactor);
+                            $("#dates").val(new Date(visualizationWindowStartMilliseconds).toLocaleDateString() +" - "+ new Date(visualizationWindowEndMilliseconds).toLocaleDateString());
+                            updateExposurePoints()
                         };
                     })(startDateMilliseconds,incrementFactor)
                 });
@@ -670,7 +657,7 @@
             });
         }
 
-        function toggleGroups(){
+        function updateExposurePoints(){
 
             let incrementFactor = (1000*60); //milliseconds in one minute
 
@@ -679,6 +666,7 @@
                 {
                     group.markers.forEach(function (element, index) {
                         removeMarker(element);
+                        removeLinesToPoint(exposurePoints.indexOf(element));
                     });
                 }
                 else
@@ -687,9 +675,30 @@
                         //we need to make sure that we only show thing that have not been redacted...the marker indicies and the element indicies should be aligned
                         if(isInitalized(group.elements[index].latitude) && isInitalized(group.elements[index].longitude))
                         {
-                            addMarker(element);
+                            //addMarker(element);
+                            //replaceLinesToPoint(exposurePoints.indexOf(element));
+                            applyTimeWindow(group.elements[index]);
                         }
                     });
+                }
+            };
+
+            let applyTimeWindow = function(exposureJSONElement){
+                let elementIndex = exposureJSON.indexOf(exposureJSONElement);
+                //hide all markers if the exposure timestamp is outside the window
+                if((exposureJSONElement.time < visualizationWindowStartMilliseconds || exposureJSONElement.time > visualizationWindowEndMilliseconds))
+                {
+                    removeMarker(exposurePoints[elementIndex]);
+                    removeLinesToPoint(elementIndex);
+                }
+                else
+                {
+                    //show all markers, if they have not been redacted via deletion
+                    if(isInitalized(exposureJSONElement.latitude) && isInitalized(exposureJSONElement.longitude))
+                    {
+                        addMarker(exposurePoints[elementIndex]);
+                        replaceLinesToPoint(elementIndex);
+                    }
                 }
             };
 
@@ -725,6 +734,12 @@
                             {
                                 hideGroupMarkers($("#hide-60").prop("checked"), group);
                             }
+                        }
+                        else
+                        {
+                            group.elements.forEach(function(element,index){
+                                applyTimeWindow(element);
+                            });
                         }
                     }
             }
@@ -844,25 +859,46 @@
         }
 
         function deleteExposure(i, marker) {
-            if (exposurePaths.length > 0) {
-                //remove the line leading FROM the marked point, if it exists, and delete the object
-                if (i < exposurePoints.length - 1) {
-                    removeLine(exposurePaths[i]);
-                }
-
-                //remove the line leading TO the marked point, if it exists, and delete the object
-                if (i > 0) {
-                    removeLine(exposurePaths[i - 1]);
-                }
-            }
-
-            //remove the marker from the map and delete the object
+            //remove the marker from the map
             removeMarker(marker);
+
+            //remove the connecting lines
+            removeLinesToPoint(i);
 
             //handle the actual exposure data
             exposureJSON[i].latitude = null;
             exposureJSON[i].longitude = null;
             updateStats();
+        }
+
+        function removeLinesToPoint(i) {
+            if (exposurePaths.length > 0) {
+                //remove the line leading FROM the marked point, if it exists
+                if (i < exposurePoints.length - 1) {
+                    removeLine(exposurePaths[i]);
+                }
+
+                //remove the line leading TO the marked point, if it exists
+                if (i > 0) {
+                    removeLine(exposurePaths[i - 1]);
+                }
+            }
+        }
+
+        function replaceLinesToPoint(i) {
+            if (exposurePaths.length > 0) {
+                //add the line leading FROM the marked point, if it exists, and if the point in front of me is visible
+                if (i < exposurePoints.length - 1 && isInitalized(exposurePoints[i+1].getMap())) {
+                    addLine(exposurePaths[i]);
+                }
+
+                //add the line leading TO the marked point, if it exists, and if the point behind me is visible
+                //  NOTE: as long as we are looping forward over time for points, this will catch the first line
+                //    as the 1st point will be visible, not enabling it's line, then the 2nd point will become visible and enable the line to the 1st point
+                if (i > 0 && isInitalized(exposurePoints[i-1].getMap())) {
+                    addLine(exposurePaths[i - 1]);
+                }
+            }
         }
 
         function updateStats(){
