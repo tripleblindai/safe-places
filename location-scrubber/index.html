@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <style>
         /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
@@ -129,6 +129,20 @@
         .pressed:hover {
             background-color: #000058;
         }
+
+        .fade-edge-hr {
+            border: 0;
+            height: 1px;
+            background: #333;
+            background-image: linear-gradient(to right, #ccc, #777, #ccc);
+        }
+
+        .fade-edge-hr2 {
+            border: 0;
+            height: 3px;
+            background: #333;
+            background-image: linear-gradient(to right, #ccc, #777, #ccc);
+        }
     </style>
 </head>
 
@@ -140,8 +154,9 @@
 
         <input class="button" type="button" id="loadFileXml" value="Load" onclick="$('#privatekitJSON').click();" />
         <input id="save" class="button disabled" disabled="disabled" onclick="saveText();" type=button value="Save" />
-        <div id="stats">Visible: <span id="visible">0</span> Hidden: <span id="hidden">0</span> Deleted: <span id="deleted">0</span> Total: <span id="total">0</span></div>
-        <hr />
+        <div id="stats">Visible: <span id="visible">0</span> Hidden: <span id="hidden">0</span> Deleted: <span
+                id="deleted">0</span> Total: <span id="total">0</span></div>
+        <hr class="fade-edge-hr2" />
         <div>
             <button class="btn" onclick="selectNone()" id="select-point">
                 <i class="fas fa-hand-pointer"></i> Select Point</button>
@@ -150,13 +165,27 @@
             <button class="btn" onclick="selectNone();" id="select-none">
                 <i class="fa fa-ban"></i> Select None</button>&nbsp;
             <p />
+            <button class="btn btn_delete disabled" onclick="deleteAll()" id="delete-all-btn">
+                <i class="fa fa-trash-alt"></i> Delete All</button>
+            <button class="btn btn_delete disabled" onclick="deleteSelectedMarker()" id="delete-btn">
+                <i class="fa fa-trash-alt"></i> Delete</button>
+            <button class="btn btn_view" onclick="zoomToExtent()" id="zoomToExtent">
+                <i class="fas fa-expand-arrows-alt"></i> Zoom</button>
+
+
+            <hr class="fade-edge-hr" />
+
             <div style="padding:8px;">
                 <label for="dates">Date Range:</label>
                 <input type="text" id="dates" readonly style="border:0; color:#999999;">
                 <div id="slider-range"></div>
+                Lock sliders: <input type="checkbox" id="lock-window" />
             </div>
             <div style="padding:8px;">
-                <span>Hide Groups of </span><input type="checkbox" id="hide-travel" onchange="updateExposurePoints()" /> Travel <input type="checkbox" id="hide-15" onchange="updateExposurePoints()" /> 15min <input type="checkbox" id="hide-30" onchange="updateExposurePoints()" /> 30min <input type="checkbox" id="hide-60" onchange="updateExposurePoints()" /> 1hr
+                <span>Hide Groups of </span><input type="checkbox" id="hide-travel" onchange="updateExposurePoints()" />
+                Travel <input type="checkbox" id="hide-15" onchange="updateExposurePoints()" /> 15min <input
+                    type="checkbox" id="hide-30" onchange="updateExposurePoints()" /> 30min <input type="checkbox"
+                    id="hide-60" onchange="updateExposurePoints()" /> 1hr
             </div>
             <button class="btn btn_delete disabled" onclick="deleteAll()" id="delete-all-btn">
                 <i class="fa fa-trash-alt"></i> Delete All</button>
@@ -178,7 +207,8 @@
 
         var MAP_API_KEY = localStorage.getItem("MAP_API_KEY");
 
-        if (!isInitalized(MAP_API_KEY) || MAP_API_KEY == "" || MAP_API_KEY == null || MAP_API_KEY == "null" || MAP_API_KEY ==
+        if (!isInitalized(MAP_API_KEY) || MAP_API_KEY == "" || MAP_API_KEY == null || MAP_API_KEY == "null" ||
+            MAP_API_KEY ==
             "MAP_API_KEY")
             enterAPIKey();
         else {
@@ -407,19 +437,15 @@
             let btnDeleteAll = $("#delete-all-btn");
             let btnDelete = $("#delete-btn");
 
-            if(all){
+            if (all) {
                 btnDeleteAll.removeClass("disabled");
-            }
-            else
-            {
+            } else {
                 btnDeleteAll.addClass("disabled");
             }
 
-            if(single){
+            if (single) {
                 btnDelete.removeClass("disabled");
-            }
-            else
-            {
+            } else {
                 btnDelete.addClass("disabled");
             }
         }
@@ -446,11 +472,11 @@
                         let currentGroupId = 0;
                         let currentGroupBounds = new google.maps.LatLngBounds();
                         exposureJSON = JSON.parse(lines);
-                        
+
                         exposureJSON.forEach(function (element, index) {
                             elementLatLng = new google.maps.LatLng(element.latitude, element
                                 .longitude);
-                            
+
                             let marker = new google.maps.Marker({
                                 position: elementLatLng,
                                 title: new Date(element.time).toLocaleString(), //convert to UCT unix to a "human" time with local time conversion
@@ -519,7 +545,8 @@
                                                         )
                                                     });
 
-                                            if (groupId == selectedGroupID) {
+                                            if (groupId ==
+                                                selectedGroupID) {
                                                 selectedGroupID = null;
                                             }
 
@@ -609,7 +636,7 @@
                         }
                         //auto-classify all points
                         toggleClassification();
-                        initDateSlider(exposureJSON[0].time,exposureJSON[exposureJSON.length-1].time);
+                        initDateSlider(exposureJSON[0].time, exposureJSON[exposureJSON.length - 1].time);
                         updateStats();
                     };
                 })(map, exposurePoints, exposurePaths);
@@ -619,9 +646,9 @@
             }
         }
 
-        function initDateSlider(startDateMilliseconds,endDateMillieconds){
+        function initDateSlider(startDateMilliseconds, endDateMillieconds) {
 
-            let utcSecondsToMidnight = function(utcSeconds){
+            let utcSecondsToMidnight = function (utcSeconds) {
                 date = new Date(utcSeconds);
                 date.setHours(0);
                 date.setMinutes(0);
@@ -634,21 +661,78 @@
 
             let incrementFactor = (1000*60*60*24); //milliseconds in one day
             let dateRange = Math.ceil((endDateMillieconds - startDateMilliseconds)/incrementFactor)+1; //number of days to have the slider cover (has to be +1 because we take the end date and move back to midnight)
-
             $(function(){
+                let windowRange = {value: null}; //needs to be an object to work nicely with closures.  Alternatively, can move to a global variable, but that is a PITA
                 $("#slider-range").slider({
                 range: true,
                 min: 0,
                 max: dateRange,
                 values: [ 0, dateRange ],
-                slide: (function(startDateMilliseconds, incrementFactor){
+                start: (function(windowRange){
+                        return function(event,ui){
+                        let eventSuccess = true;
+                        if($("#lock-window").prop("checked"))
+                        {
+                            if(!isInitalized(windowRange.value))
+                            {
+                                windowRange.value = ui.values[1]-ui.values[0];
+                                if(windowRange.value <= 0)
+                                {
+                                    eventSuccess = false;
+                                    windowRange.value = null;
+                                    $("#lock-window").prop("checked",false)
+                                    alert("Cannot move lock sliders when locked to the same day!");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            windowRange.value = null;
+                        }
+                        return eventSuccess;
+                    }
+                })(windowRange),
+                slide: (function(startDateMilliseconds, incrementFactor,windowRange){
                         return function(event, ui) {
-                            visualizationWindowStartMilliseconds = startDateMilliseconds + (ui.values[0]*incrementFactor);
-                            visualizationWindowEndMilliseconds = startDateMilliseconds + (ui.values[1]*incrementFactor);
-                            $("#dates").val(new Date(visualizationWindowStartMilliseconds).toLocaleDateString() +" - "+ new Date(visualizationWindowEndMilliseconds).toLocaleDateString());
-                            updateExposurePoints()
+                            let eventSuccess = true;
+                            if($("#lock-window").prop("checked") && isInitalized(windowRange.value))
+                            {
+                                let slidingHandle = ui.handleIndex;
+                                let followingHandle = Math.abs(slidingHandle-1);
+                                if(ui.values[1]-ui.values[0] != windowRange.value)
+                                {
+                                    let valueDelta = 0
+                                    if(followingHandle == 1)
+                                    {
+                                        valueDelta = windowRange.value - (ui.values[1]-ui.values[0]);
+                                    }
+                                    else if(followingHandle == 0)
+                                    {
+                                        valueDelta = (ui.values[1]-ui.values[0]) - windowRange.value;
+                                    }
+
+                                    let followingHandleTargetValue = (ui.values[followingHandle] + valueDelta);
+                                    if((followingHandleTargetValue >= $("#slider-range").slider("option","min")) && (followingHandleTargetValue <= $("#slider-range").slider("option","max")))
+                                    {
+                                        $("#slider-range").slider('values',followingHandle,  ui.values[followingHandle]+valueDelta);
+                                        ui.values[followingHandle] += valueDelta;
+                                    }
+                                    else
+                                    {
+                                        eventSuccess = false;
+                                    }
+                                }
+                            }
+                            if(eventSuccess)
+                            {
+                                visualizationWindowStartMilliseconds = startDateMilliseconds + (ui.values[0]*incrementFactor);
+                                visualizationWindowEndMilliseconds = startDateMilliseconds + (ui.values[1]*incrementFactor);
+                                $("#dates").val(new Date(visualizationWindowStartMilliseconds).toLocaleDateString() +" - "+ new Date(visualizationWindowEndMilliseconds).toLocaleDateString());
+                                updateExposurePoints()
+                            }
+                            return eventSuccess;
                         };
-                    })(startDateMilliseconds,incrementFactor)
+                    })(startDateMilliseconds,incrementFactor,windowRange)
                 });
                 
                 let startDateString = new Date(startDateMilliseconds + $("#slider-range").slider("values",0)*incrementFactor).toLocaleDateString();
@@ -657,20 +741,17 @@
             });
         }
 
-        function updateExposurePoints(){
+        function updateExposurePoints() {
 
-            let incrementFactor = (1000*60); //milliseconds in one minute
+            let incrementFactor = (1000 * 60); //milliseconds in one minute
 
-            let hideGroupMarkers = function(toogleEnabled, group){
-                if(toogleEnabled)
-                {
+            let hideGroupMarkers = function (toogleEnabled, group) {
+                if (toogleEnabled) {
                     group.markers.forEach(function (element, index) {
                         removeMarker(element);
                         removeLinesToPoint(exposurePoints.indexOf(element));
                     });
-                }
-                else
-                {
+                } else {
                     group.markers.forEach(function (element, index) {
                         //we need to make sure that we only show thing that have not been redacted...the marker indicies and the element indicies should be aligned
                         if(isInitalized(group.elements[index].latitude) && isInitalized(group.elements[index].longitude))
@@ -683,19 +764,16 @@
                 }
             };
 
-            let applyTimeWindow = function(exposureJSONElement){
+            let applyTimeWindow = function (exposureJSONElement) {
                 let elementIndex = exposureJSON.indexOf(exposureJSONElement);
                 //hide all markers if the exposure timestamp is outside the window
-                if((exposureJSONElement.time < visualizationWindowStartMilliseconds || exposureJSONElement.time > visualizationWindowEndMilliseconds))
-                {
+                if ((exposureJSONElement.time < visualizationWindowStartMilliseconds || exposureJSONElement.time >
+                        visualizationWindowEndMilliseconds)) {
                     removeMarker(exposurePoints[elementIndex]);
                     removeLinesToPoint(elementIndex);
-                }
-                else
-                {
+                } else {
                     //show all markers, if they have not been redacted via deletion
-                    if(isInitalized(exposureJSONElement.latitude) && isInitalized(exposureJSONElement.longitude))
-                    {
+                    if (isInitalized(exposureJSONElement.latitude) && isInitalized(exposureJSONElement.longitude)) {
                         addMarker(exposurePoints[elementIndex]);
                         replaceLinesToPoint(elementIndex);
                     }
@@ -704,44 +782,33 @@
 
             let exposureGroupKeys = Object.keys(exposureGroups);
             for (const key of exposureGroupKeys) {
-                    let group = exposureGroups[key];
-                    let groupType = group.elements[0].groupType;
+                let group = exposureGroups[key];
+                let groupType = group.elements[0].groupType;
 
-                    if(groupType == GROUP_TYPES.TRAVEL)
-                    {
-                        hideGroupMarkers($("#hide-travel").prop("checked"), group);
-                    }
-                    else
-                    {
-                        let groupTimeBoundsStartTime = group.elements[0].time;
-                        let groupTimeBoundsEndTime = group.elements[group.elements.length-1].time;
-                        let groupTimeBounds = (groupTimeBoundsEndTime-groupTimeBoundsStartTime)/incrementFactor;
-                        
-                        if(groupTimeBounds < 60)
-                        {
-                            if(groupTimeBounds < 30)
-                            {
-                                if(groupTimeBounds < 15)
-                                {
-                                    hideGroupMarkers($("#hide-15").prop("checked")||$("#hide-30").prop("checked")||$("#hide-60").prop("checked"), group);
-                                }
-                                else
-                                {
-                                    hideGroupMarkers($("#hide-30").prop("checked")||$("#hide-60").prop("checked"), group);
-                                }
+                if (groupType == GROUP_TYPES.TRAVEL) {
+                    hideGroupMarkers($("#hide-travel").prop("checked"), group);
+                } else {
+                    let groupTimeBoundsStartTime = group.elements[0].time;
+                    let groupTimeBoundsEndTime = group.elements[group.elements.length - 1].time;
+                    let groupTimeBounds = (groupTimeBoundsEndTime - groupTimeBoundsStartTime) / incrementFactor;
+
+                    if (groupTimeBounds < 60) {
+                        if (groupTimeBounds < 30) {
+                            if (groupTimeBounds < 15) {
+                                hideGroupMarkers($("#hide-15").prop("checked") || $("#hide-30").prop("checked") || $(
+                                    "#hide-60").prop("checked"), group);
+                            } else {
+                                hideGroupMarkers($("#hide-30").prop("checked") || $("#hide-60").prop("checked"), group);
                             }
-                            else
-                            {
-                                hideGroupMarkers($("#hide-60").prop("checked"), group);
-                            }
+                        } else {
+                            hideGroupMarkers($("#hide-60").prop("checked"), group);
                         }
-                        else
-                        {
-                            group.elements.forEach(function(element,index){
-                                applyTimeWindow(element);
-                            });
-                        }
+                    } else {
+                        group.elements.forEach(function (element, index) {
+                            applyTimeWindow(element);
+                        });
                     }
+                }
             }
             updateStats();
         }
@@ -752,14 +819,14 @@
             let exposureGroupKeys = Object.keys(exposureGroups);
             for (const key of exposureGroupKeys) {
                 //if ($("#classify").prop("checked")) {
-                    let groupType = exposureGroups[key].elements[0].groupType;
-                    if (groupType == GROUP_TYPES.RECURRING) {
-                        markerIcon = MARKER_ICONS.RECURRING;
-                    } else if (groupType == GROUP_TYPES.TRANSIENT) {
-                        markerIcon = MARKER_ICONS.TRANSIENT;
-                    } else if (groupType == GROUP_TYPES.TRAVEL) {
-                        markerIcon = MARKER_ICONS.TRAVEL;
-                    }
+                let groupType = exposureGroups[key].elements[0].groupType;
+                if (groupType == GROUP_TYPES.RECURRING) {
+                    markerIcon = MARKER_ICONS.RECURRING;
+                } else if (groupType == GROUP_TYPES.TRANSIENT) {
+                    markerIcon = MARKER_ICONS.TRANSIENT;
+                } else if (groupType == GROUP_TYPES.TRAVEL) {
+                    markerIcon = MARKER_ICONS.TRAVEL;
+                }
                 //}
                 exposureGroups[key].markers.forEach(function (element, index) {
                     element.setIcon(markerIcon);
@@ -888,51 +955,45 @@
         function replaceLinesToPoint(i) {
             if (exposurePaths.length > 0) {
                 //add the line leading FROM the marked point, if it exists, and if the point in front of me is visible
-                if (i < exposurePoints.length - 1 && isInitalized(exposurePoints[i+1].getMap())) {
+                if (i < exposurePoints.length - 1 && isInitalized(exposurePoints[i + 1].getMap())) {
                     addLine(exposurePaths[i]);
                 }
 
                 //add the line leading TO the marked point, if it exists, and if the point behind me is visible
                 //  NOTE: as long as we are looping forward over time for points, this will catch the first line
                 //    as the 1st point will be visible, not enabling it's line, then the 2nd point will become visible and enable the line to the 1st point
-                if (i > 0 && isInitalized(exposurePoints[i-1].getMap())) {
+                if (i > 0 && isInitalized(exposurePoints[i - 1].getMap())) {
                     addLine(exposurePaths[i - 1]);
                 }
             }
         }
 
-        function updateStats(){
+        function updateStats() {
             let statsElement = $("#stats");
-            let loadedElement = $("#loaded",statsElement);
+            let loadedElement = $("#loaded", statsElement);
             let visibleCount = 0;
             let hiddenCount = 0;
             let deletedCount = 0;
             let totalCount = 0;
-            let visibleElement = $("#visible",statsElement);
-            let hiddenElement = $("#hidden",statsElement);
-            let deletedElement = $("#deleted",statsElement);
-            let totalElement = $("#total",statsElement);
-            if(loadedElement.length == 0)
-            {
-                loadedElement = $("<div />").prop("id","loaded").html("Loaded: "+ exposureJSON.length +"")
+            let visibleElement = $("#visible", statsElement);
+            let hiddenElement = $("#hidden", statsElement);
+            let deletedElement = $("#deleted", statsElement);
+            let totalElement = $("#total", statsElement);
+            if (loadedElement.length == 0) {
+                loadedElement = $("<div />").prop("id", "loaded").html("Loaded: " + exposureJSON.length + "")
                 statsElement.prepend(loadedElement);
             }
-            exposureJSON.forEach(function(element,index){
-                if(!isInitalized(element.latitude) || !isInitalized(element.longitude))
-                {
+            exposureJSON.forEach(function (element, index) {
+                if (!isInitalized(element.latitude) || !isInitalized(element.longitude)) {
                     deletedCount++;
-                }
-                else if(isInitalized(exposurePoints[index].getMap()))
-                {
+                } else if (isInitalized(exposurePoints[index].getMap())) {
                     visibleCount++;
-                }
-                else
-                {
+                } else {
                     hiddenCount++;
                 }
             });
-            
-            totalCount = visibleCount+deletedCount+hiddenCount;
+
+            totalCount = visibleCount + deletedCount + hiddenCount;
             visibleElement.html(+visibleCount);
             hiddenElement.html(+hiddenCount);
             deletedElement.html(+deletedCount);
@@ -944,7 +1005,8 @@
             // the import format, just missing the redacted points.
             let out = [];
             for (var i = 0; i < exposureJSON.length; i++) {
-                if(isInitalized(exposureJSON[i].latitude) && isInitalized(exposureJSON[i].longitude) && isInitalized(exposurePoints[i].getMap())) {
+                if (isInitalized(exposureJSON[i].latitude) && isInitalized(exposureJSON[i].longitude) && isInitalized(
+                        exposurePoints[i].getMap())) {
                     element = {};
                     element.time = exposureJSON[i].time;
                     element.longitude = exposureJSON[i].longitude;
