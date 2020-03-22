@@ -5,7 +5,7 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <meta name="author" content="Kevin P. , MITsdm'18">
-    <title>SafePaths MIT</title>
+    <title>Safe Places: Redaction Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -119,6 +119,10 @@
             background-color: #777;
         }
 
+        #lock-window {
+            display: none;
+        }
+
 
 
         /* Darker background on mouse-over */
@@ -143,6 +147,145 @@
             background: #333;
             background-image: linear-gradient(to right, #ccc, #777, #ccc);
         }
+
+        .checks {
+            background-color: goldenrod;
+            border-radius: 5px;
+            margin: 3px;
+            padding: 10px;
+            padding-top: 7px;
+            padding-left: 7px;
+            padding-right: 8px;
+        }
+
+        #dates {
+            height: 2em;
+            color: #777777;
+        }
+
+        #date-start {
+            border: 0;
+            width: 45%;
+            float: left;
+            text-align: right;
+        }
+
+        #date-sep {
+            float: left;
+            font-weight: bold;
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+
+        #date-end {
+            border: 0;
+            width: 45%;
+            text-align: left;
+            float: left;
+        }
+
+        #slider-range {
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        #duration {
+            width: 100%;
+            text-align: right;
+        }
+
+        #lock-icon {
+            width: 1em;
+            color: #333;
+        }
+
+        #duration-container {
+            /* shown once file is opened */
+            display: none;
+            float: right;
+        }
+
+        /* Checkbox styling */
+        /* Base for label styling */
+        .checks [type="checkbox"]:not(:checked),
+        .checks [type="checkbox"]:checked {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .checks [type="checkbox"]:not(:checked)+label,
+        .checks [type="checkbox"]:checked+label {
+            position: relative;
+            padding-left: 1.95em;
+            cursor: pointer;
+        }
+
+        /* checkbox aspect */
+        .checks [type="checkbox"]:not(:checked)+label:before,
+        .checks [type="checkbox"]:checked+label:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1.25em;
+            height: 1.25em;
+            border: 2px solid #ccc;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, .1);
+        }
+
+        /* checked mark aspect */
+        .checks [type="checkbox"]:not(:checked)+label:after,
+        .checks [type="checkbox"]:checked+label:after {
+            content: '\2713\0020';
+            position: absolute;
+            top: .15em;
+            left: .22em;
+            font-size: 1.3em;
+            line-height: 0.8;
+            color: #09ad7e;
+            transition: all .2s;
+            font-family: 'Lucida Sans Unicode', 'Arial Unicode MS', Arial;
+        }
+
+        /* checked mark aspect changes */
+        .checks [type="checkbox"]:not(:checked)+label:after {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .checks [type="checkbox"]:checked+label:after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* disabled checkbox */
+        .checks [type="checkbox"]:disabled:not(:checked)+label:before,
+        .checks [type="checkbox"]:disabled:checked+label:before {
+            box-shadow: none;
+            border-color: #bbb;
+            background-color: #ddd;
+        }
+
+        .checks [type="checkbox"]:disabled:checked+label:after {
+            color: #999;
+        }
+
+        .checks [type="checkbox"]:disabled+label {
+            color: #aaa;
+        }
+
+        /* accessibility */
+        .checks [type="checkbox"]:checked:focus+label:before,
+        .checks [type="checkbox"]:not(:checked):focus+label:before {
+            border: 2px dotted blue;
+        }
+
+        /* hover style just for information */
+        label:hover:before {
+            border: 2px solid #4778d9 !important;
+        }
     </style>
 </head>
 
@@ -154,8 +297,10 @@
 
         <input class="button" type="button" id="loadFileXml" value="Load" onclick="$('#privatekitJSON').click();" />
         <input id="save" class="button disabled" disabled="disabled" onclick="saveText();" type=button value="Save" />
-        <div id="stats">Visible: <span id="visible">0</span> Hidden: <span id="hidden">0</span> Deleted: <span
-                id="deleted">0</span> Total: <span id="total">0</span></div>
+
+        <div style="display: none" id="stats">Visible: <span id="visible">0</span> Hidden: <span id="hidden">0</span>
+            Deleted: <span id="deleted">0</span> Total: <span id="total">0</span></div>
+
         <hr class="fade-edge-hr2" />
         <div>
             <button class="btn" onclick="selectNone()" id="select-point">
@@ -175,24 +320,44 @@
 
             <hr class="fade-edge-hr" />
 
-            <div style="padding:8px;">
-                <label for="dates">Date Range:</label>
-                <input type="text" id="dates" readonly style="border:0; color:#999999;">
+            <div style="padding:8px; text-align: left;">
+                Date Range:
+                <span id="duration-container">
+                    <span id="duration"></span><input onclick="updateLockIcon()" type="checkbox" id="lock-window" />
+                    <label for="lock-window"><i id="lock-icon" class="fas fa-lock"></i></label>
+                </span>
+                <br />
+                <div id="dates">
+                    <div id="date-start">&nbsp;</div>
+                    <span id="date-sep">&nbsp;</span>
+                    <div id="date-end">&nbsp;</div>
+                </div>
                 <div id="slider-range"></div>
-                Lock sliders: <input type="checkbox" id="lock-window" />
+
             </div>
-            <div style="padding:8px;">
-                <span>Hide Groups of </span><input type="checkbox" id="hide-travel" onchange="updateExposurePoints()" />
-                Travel <input type="checkbox" id="hide-15" onchange="updateExposurePoints()" /> 15min <input
-                    type="checkbox" id="hide-30" onchange="updateExposurePoints()" /> 30min <input type="checkbox"
-                    id="hide-60" onchange="updateExposurePoints()" /> 1hr
+            <div style="padding:8px; text-align: left;">
+                <span>Hide:</span>
+                <br />
+                <span class="checks">
+                    <input type="checkbox" id="hide-15" onchange="updateExposurePoints()" />
+                    <label for="hide-15">&lt; 15min</label>
+                </span>
+
+                <span class="checks">
+                    <input type="checkbox" id="hide-30" onchange="updateExposurePoints()" />
+                    <label for="hide-30">&lt; 30min</label>
+                </span>
+
+                <span class="checks">
+                    <input type="checkbox" id="hide-60" onchange="updateExposurePoints()" />
+                    <label for="hide-60">&lt; 1hr</label>
+                </span>
+                <span class="checks">
+                    <input type="checkbox" id="hide-travel" onchange="updateExposurePoints()" />
+                    <label for="hide-travel">Travel</label>
+
+                </span>
             </div>
-            <button class="btn btn_delete disabled" onclick="deleteAll()" id="delete-all-btn">
-                <i class="fa fa-trash-alt"></i> Delete All</button>
-            <button class="btn btn_delete disabled" onclick="deleteSelectedMarker()" id="delete-btn">
-                <i class="fa fa-trash-alt"></i> Delete</button>
-            <button class="btn btn_view" onclick="zoomToExtent()" id="zoomToExtent">
-                <i class="fas fa-expand-arrows-alt"></i> Zoom</button>
         </div>
     </div>
     <div id="map"></div>
@@ -241,7 +406,12 @@
 
         var exposurePoints;
         var exposurePaths;
-        var exposureGroups; //associative array of groupId to markers, JSON elements, and LatLngBounds objects contained within each group
+
+        // Associative array of groupId to markers, JSON elements, and
+        // LatLngBounds objects contained within each group
+        //
+        var exposureGroups;
+
         const GROUP_TYPES = {
             UNDEF: "undefined",
             RECURRING: "recurring",
@@ -267,8 +437,8 @@
         var selectedMarker;
         var global_uncolorClosure = null;
         var selectedGroupID = null;
-        var visualizationWindowStartMilliseconds;
-        var visualizationWindowEndMilliseconds;
+        var msVizStart; // all times are in milliseconds;
+        var msVizEnd;
         var fileRegExp = new RegExp(/\.json$/);
 
         function initMap() {
@@ -292,6 +462,8 @@
             });
 
             initDrawing();
+
+            initDateSlider(0, 0);
         }
 
         function initDrawing() {
@@ -450,6 +622,28 @@
             }
         }
 
+        function normalizeInputData(arr) {
+            // This fixes several issues that I found in different input data:
+            //   * Values stored as strings instead of numbers
+            //   * Extra info in the input
+            //   * Improperly sorted data (can happen after an Import)
+            var result = [];
+
+            for (var i = 0; i < arr.length; i++) {
+                elem = arr[i];
+                if ("time" in elem && "latitude" in elem && "longitude" in elem) {
+                    result.push({
+                        "time": Number(elem.time),
+                        "latitude": Number(elem.latitude),
+                        "longitude": Number(elem.longitude)
+                    });
+                }
+            }
+
+            result.sort();
+            return result;
+        }
+
         function loadPath() {
 
             file = $("#privatekitJSON").get(0).files[0];
@@ -471,7 +665,7 @@
                         let lastLatLng = null;
                         let currentGroupId = 0;
                         let currentGroupBounds = new google.maps.LatLngBounds();
-                        exposureJSON = JSON.parse(lines);
+                        exposureJSON = normalizeInputData(JSON.parse(lines));
 
                         exposureJSON.forEach(function (element, index) {
                             elementLatLng = new google.maps.LatLng(element.latitude, element
@@ -479,7 +673,8 @@
 
                             let marker = new google.maps.Marker({
                                 position: elementLatLng,
-                                title: new Date(element.time).toLocaleString(), //convert to UCT unix to a "human" time with local time conversion
+                                title: new Date(element.time)
+                                    .toLocaleString(), //convert to UC unix to a "human" time with local time conversion
                                 icon: MARKER_ICONS.DEFAULT,
                                 map: map
                             });
@@ -646,7 +841,7 @@
             }
         }
 
-        function initDateSlider(startDateMilliseconds, endDateMillieconds) {
+        function initDateSlider(msStartDate, msEndDate) {
 
             let utcSecondsToMidnight = function (utcSeconds) {
                 date = new Date(utcSeconds);
@@ -656,89 +851,145 @@
                 return date.getTime();
             };
 
-            startDateMilliseconds = utcSecondsToMidnight(startDateMilliseconds);
-            endDateMillieconds = utcSecondsToMidnight(endDateMillieconds);
+            msStartDate = utcSecondsToMidnight(msStartDate);
+            msEndDate = utcSecondsToMidnight(msEndDate);
 
-            let incrementFactor = (1000*60*60*24); //milliseconds in one day
-            let dateRange = Math.ceil((endDateMillieconds - startDateMilliseconds)/incrementFactor)+1; //number of days to have the slider cover (has to be +1 because we take the end date and move back to midnight)
-            $(function(){
-                let windowRange = {value: null}; //needs to be an object to work nicely with closures.  Alternatively, can move to a global variable, but that is a PITA
+            let incrementFactor = (1000 * 60 * 60); //milliseconds in one day
+            let dateRange = Math.ceil((msEndDate - msStartDate) / incrementFactor) +
+                1; //number of days to have the slider cover (has to be +1 because we take the end date and move back to midnight)
+            $(function () {
+                let windowRange = {
+                    value: null
+                }; //needs to be an object to work nicely with closures.  Alternatively, can move to a global variable, but that is a PITA
                 $("#slider-range").slider({
-                range: true,
-                min: 0,
-                max: dateRange,
-                values: [ 0, dateRange ],
-                start: (function(windowRange){
-                        return function(event,ui){
-                        let eventSuccess = true;
-                        if($("#lock-window").prop("checked"))
-                        {
-                            if(!isInitalized(windowRange.value))
-                            {
-                                windowRange.value = ui.values[1]-ui.values[0];
-                                if(windowRange.value <= 0)
-                                {
-                                    eventSuccess = false;
-                                    windowRange.value = null;
-                                    $("#lock-window").prop("checked",false)
-                                    alert("Cannot move lock sliders when locked to the same day!");
-                                }
-                            }
-                        }
-                        else
-                        {
-                            windowRange.value = null;
-                        }
-                        return eventSuccess;
-                    }
-                })(windowRange),
-                slide: (function(startDateMilliseconds, incrementFactor,windowRange){
-                        return function(event, ui) {
+                    range: true,
+                    min: 0,
+                    max: dateRange,
+                    values: [0, dateRange],
+                    start: (function (windowRange) {
+                        return function (event, ui) {
                             let eventSuccess = true;
-                            if($("#lock-window").prop("checked") && isInitalized(windowRange.value))
-                            {
-                                let slidingHandle = ui.handleIndex;
-                                let followingHandle = Math.abs(slidingHandle-1);
-                                if(ui.values[1]-ui.values[0] != windowRange.value)
-                                {
-                                    let valueDelta = 0
-                                    if(followingHandle == 1)
-                                    {
-                                        valueDelta = windowRange.value - (ui.values[1]-ui.values[0]);
+                            if ($("#lock-window").prop("checked")) {
+                                if (!isInitalized(windowRange.value)) {
+                                    windowRange.value = ui.values[1] - ui.values[0];
+                                    if (windowRange.value <= 0) {
+                                        eventSuccess = false;
+                                        windowRange.value = null;
+                                        $("#lock-window").prop("checked", false)
+                                        alert(
+                                            "Cannot move lock sliders when locked to the same day!"
+                                        );
                                     }
-                                    else if(followingHandle == 0)
-                                    {
-                                        valueDelta = (ui.values[1]-ui.values[0]) - windowRange.value;
+                                }
+                            } else {
+                                windowRange.value = null;
+                            }
+                            return eventSuccess;
+                        }
+                    })(windowRange),
+                    slide: (function (msStartDate, incrementFactor, windowRange) {
+                        return function (event, ui) {
+                            let eventSuccess = true;
+                            if ($("#lock-window").prop("checked") && isInitalized(
+                                    windowRange.value)) {
+                                let slidingHandle = ui.handleIndex;
+                                let followingHandle = Math.abs(slidingHandle - 1);
+                                if (ui.values[1] - ui.values[0] != windowRange.value) {
+                                    let valueDelta = 0
+                                    if (followingHandle == 1) {
+                                        valueDelta = windowRange.value - (ui.values[1] - ui
+                                            .values[0]);
+                                    } else if (followingHandle == 0) {
+                                        valueDelta = (ui.values[1] - ui.values[0]) -
+                                            windowRange.value;
                                     }
 
-                                    let followingHandleTargetValue = (ui.values[followingHandle] + valueDelta);
-                                    if((followingHandleTargetValue >= $("#slider-range").slider("option","min")) && (followingHandleTargetValue <= $("#slider-range").slider("option","max")))
-                                    {
-                                        $("#slider-range").slider('values',followingHandle,  ui.values[followingHandle]+valueDelta);
+                                    let followingHandleTargetValue = (ui.values[
+                                        followingHandle] + valueDelta);
+                                    if ((followingHandleTargetValue >= $("#slider-range")
+                                            .slider("option", "min")) && (
+                                            followingHandleTargetValue <= $("#slider-range")
+                                            .slider("option", "max"))) {
+                                        $("#slider-range").slider('values', followingHandle,
+                                            ui.values[followingHandle] + valueDelta);
                                         ui.values[followingHandle] += valueDelta;
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         eventSuccess = false;
                                     }
                                 }
                             }
-                            if(eventSuccess)
-                            {
-                                visualizationWindowStartMilliseconds = startDateMilliseconds + (ui.values[0]*incrementFactor);
-                                visualizationWindowEndMilliseconds = startDateMilliseconds + (ui.values[1]*incrementFactor);
-                                $("#dates").val(new Date(visualizationWindowStartMilliseconds).toLocaleDateString() +" - "+ new Date(visualizationWindowEndMilliseconds).toLocaleDateString());
-                                updateExposurePoints()
+                            if (eventSuccess) {
+                                msVizStart =
+                                    msStartDate + (ui.values[0] *
+                                        incrementFactor);
+                                msVizEnd = msStartDate +
+                                    (ui.values[1] * incrementFactor);
+
+                                var startDate = new Date(msVizStart);
+                                var endDate = new Date(msVizEnd);
+
+                                updateDateRange(startDate, endDate);
                             }
                             return eventSuccess;
                         };
-                    })(startDateMilliseconds,incrementFactor,windowRange)
+                    })(msStartDate, incrementFactor, windowRange)
                 });
-                
-                let startDateString = new Date(startDateMilliseconds + $("#slider-range").slider("values",0)*incrementFactor).toLocaleDateString();
-                let endDateString = new Date(startDateMilliseconds + $("#slider-range").slider("values",1)*incrementFactor).toLocaleDateString();
-                $("#dates").val(startDateString +" - "+ endDateString);
+
+                // Set the display string
+                let startDate = new Date(msStartDate + $("#slider-range").slider("values", 0) *
+                    incrementFactor);
+                let endDate = new Date(msStartDate + $("#slider-range").slider("values", 1) * incrementFactor);
+                updateDateRange(startDate, endDate);
             });
+        }
+
+        function updateLockIcon() {
+            var lock = document.getElementById("lock-icon");
+            if ($("#lock-window").prop("checked")) {
+                lock.classList.remove("fa-lock-open");
+                lock.classList.add("fa-lock");
+            } else {
+                lock.classList.remove("fa-lock");
+                lock.classList.add("fa-lock-open");
+            }
+        }
+
+        function updateDateRange(startDate, endDate) {
+            var durationContainer = document.getElementById("duration-container");
+            if (startDate.getTime() == -64800000) {
+                durationContainer.style.display = "none";
+                return;
+            } else
+                durationContainer.style.display = "block";
+
+            updateLockIcon();
+
+            // Change the slider and labels related to the date range
+            $("#date-start").text(
+                startDate.toLocaleString());
+            $("#date-sep").html("&mdash;")
+            $("#date-end").text(
+                endDate.toLocaleString());
+
+            updateExposurePoints();
+
+            var durHours = (endDate.getTime() - startDate.getTime()) / (60 * 60 * 1000);
+            var Days = Math.floor(durHours / 24);
+            var Remainder = durHours % 24;
+            var Hours = Math.floor(Remainder);
+
+            var text = "";
+            if (Days > 0) {
+                text += Days + " day"; // TRANSLATION:
+                if (Days > 1)
+                    text += "s"; // TRANSLATION: plural
+            }
+            if (Hours > 0) {
+                text += " " + Hours + " hr"; // TRANSLATION:
+                if (Hours > 1)
+                    text += "s"; // TRANSLATION: plural
+            }
+            $("#duration").text(text);
         }
 
         function updateExposurePoints() {
@@ -754,8 +1005,8 @@
                 } else {
                     group.markers.forEach(function (element, index) {
                         //we need to make sure that we only show thing that have not been redacted...the marker indicies and the element indicies should be aligned
-                        if(isInitalized(group.elements[index].latitude) && isInitalized(group.elements[index].longitude))
-                        {
+                        if (isInitalized(group.elements[index].latitude) && isInitalized(group.elements[
+                                index].longitude)) {
                             //addMarker(element);
                             //replaceLinesToPoint(exposurePoints.indexOf(element));
                             applyTimeWindow(group.elements[index]);
@@ -767,13 +1018,14 @@
             let applyTimeWindow = function (exposureJSONElement) {
                 let elementIndex = exposureJSON.indexOf(exposureJSONElement);
                 //hide all markers if the exposure timestamp is outside the window
-                if ((exposureJSONElement.time < visualizationWindowStartMilliseconds || exposureJSONElement.time >
-                        visualizationWindowEndMilliseconds)) {
+                if ((exposureJSONElement.time < msVizStart || exposureJSONElement.time >
+                        msVizEnd)) {
                     removeMarker(exposurePoints[elementIndex]);
                     removeLinesToPoint(elementIndex);
                 } else {
                     //show all markers, if they have not been redacted via deletion
-                    if (isInitalized(exposureJSONElement.latitude) && isInitalized(exposureJSONElement.longitude)) {
+                    if (isInitalized(exposureJSONElement.latitude) && isInitalized(exposureJSONElement
+                            .longitude)) {
                         addMarker(exposurePoints[elementIndex]);
                         replaceLinesToPoint(elementIndex);
                     }
@@ -795,10 +1047,12 @@
                     if (groupTimeBounds < 60) {
                         if (groupTimeBounds < 30) {
                             if (groupTimeBounds < 15) {
-                                hideGroupMarkers($("#hide-15").prop("checked") || $("#hide-30").prop("checked") || $(
-                                    "#hide-60").prop("checked"), group);
+                                hideGroupMarkers($("#hide-15").prop("checked") || $("#hide-30").prop("checked") ||
+                                    $(
+                                        "#hide-60").prop("checked"), group);
                             } else {
-                                hideGroupMarkers($("#hide-30").prop("checked") || $("#hide-60").prop("checked"), group);
+                                hideGroupMarkers($("#hide-30").prop("checked") || $("#hide-60").prop("checked"),
+                                    group);
                             }
                         } else {
                             hideGroupMarkers($("#hide-60").prop("checked"), group);
@@ -969,6 +1223,7 @@
         }
 
         function updateStats() {
+
             let statsElement = $("#stats");
             let loadedElement = $("#loaded", statsElement);
             let visibleCount = 0;
@@ -1005,7 +1260,8 @@
             // the import format, just missing the redacted points.
             let out = [];
             for (var i = 0; i < exposureJSON.length; i++) {
-                if (isInitalized(exposureJSON[i].latitude) && isInitalized(exposureJSON[i].longitude) && isInitalized(
+                if (isInitalized(exposureJSON[i].latitude) && isInitalized(exposureJSON[i].longitude) &&
+                    isInitalized(
                         exposurePoints[i].getMap())) {
                     element = {};
                     element.time = exposureJSON[i].time;
