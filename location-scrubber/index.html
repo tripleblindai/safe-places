@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <style>
         /* Always set the map height explicitly to define the size of the div
@@ -644,6 +645,23 @@
             return result;
         }
 
+        function computeSpeedKmph(prevLatLng, currentLatLng, prevTs, currentTs) {
+                if (prevLatLng == null || prevTs == null) {
+                    console.log("NULL SPEED");
+                    return null;
+                }
+
+                var pt1 = turf.point([prevLatLng.lng(), prevLatLng.lat()]);
+                var pt2 = turf.point([currentLatLng.lng(), currentLatLng.lat()]);
+                var options = { units: 'kilometers' };
+                var distance = turf.distance(pt1, pt2, options);
+                var timeDelta = (currentTs - prevTs) / (1000 * 60 * 60); // in hours
+
+                // time in milliseconds and distance in kms
+                let speed = (distance / timeDelta);
+                return speed;
+        }
+
         function loadPath() {
 
             file = $("#privatekitJSON").get(0).files[0];
@@ -663,6 +681,7 @@
                     return function (event) {
                         let lines = event.target.result;
                         let lastLatLng = null;
+                        let lastTs = null;
                         let currentGroupId = 0;
                         let currentGroupBounds = new google.maps.LatLngBounds();
                         exposureJSON = normalizeInputData(JSON.parse(lines));
@@ -671,12 +690,23 @@
                             elementLatLng = new google.maps.LatLng(element.latitude, element
                                 .longitude);
 
+                            let speed = computeSpeedKmph(lastLatLng, elementLatLng, lastTs, element.time);
+
                             let marker = new google.maps.Marker({
                                 position: elementLatLng,
                                 title: new Date(element.time)
                                     .toLocaleString(), //convert to UC unix to a "human" time with local time conversion
                                 icon: MARKER_ICONS.DEFAULT,
-                                map: map
+                                map: map,
+                            });
+
+                            var infowindow = new google.maps.InfoWindow({
+                                content: `Speed ${speed} kmph`
+                            });
+
+                            google.maps.event.addDomListener(marker, 'click', function () {
+                                infowindow.open(map, marker);
+
                             });
 
                             points.push(marker);
@@ -772,6 +802,7 @@
                             }
 
                             lastLatLng = elementLatLng;
+                            lastTs = element.time;
                         });
 
                         // Zoom to see all of the loaded points
