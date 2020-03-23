@@ -528,7 +528,7 @@
                 if (isInitalized(exposurePoints)) {
                     let areaBounds = selectedArea.getBounds();
                     exposurePoints.forEach(function (element, index) {
-                        if (areaBounds.contains(element.getPosition())) {
+                        if(isInitalized(element.getMap()) && areaBounds.contains(element.getPosition())) {
                             deleteExposure(index, element);
                         }
                     });
