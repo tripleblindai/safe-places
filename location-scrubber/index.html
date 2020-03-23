@@ -428,6 +428,14 @@
             TRANSIENT: 'https://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|ff9900', //ORANGE
             TRAVEL: 'https://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|fdf569' //YELLOW
         }
+        const MARKER_ZINDEX = {
+            DEFAULT: 0, //ideally would have liked to use google.maps.Marker.MAX_ZINDEX, but it library isn't initalized when this tries to load
+            SELECTED: 4, //selected marker is always on top
+            GROUP: 3, //followed by others in its selected group
+            TRANSIENT: 2, //transients are higher priority than recurring (???) 
+            RECURRING: 1, //
+            TRAVEL: 0, //travel should always be on the bottom
+        }
         var map;
         //May still have use for geo-coding
         //var infoWindow;
@@ -459,6 +467,10 @@
                 if (this.getZoom() > 15) {
                     this.setZoom(15);
                 }
+            });
+
+            google.maps.event.addListener(map, 'click', function(event){
+                selectNone();
             });
 
             initDrawing();
@@ -721,13 +733,17 @@
                                     selectNone();
                                     enableDelete(false);
 
+                                    let groupType = exposureGroups[groupId].elements[0].groupType;
+
                                     // when we click a marker set all the markers in that group to purple
                                     exposureGroups[groupId].markers.forEach(
                                         function (element, index) {
-                                            element.setIcon(MARKER_ICONS.GROUP)
+                                            element.setIcon(MARKER_ICONS.GROUP);
+                                            element.setZIndex(MARKER_ZINDEX.GROUP);
                                         });
                                     //then set the clicked marker to green
                                     thisMarker.setIcon(MARKER_ICONS.SELECTED);
+                                    thisMarker.setZIndex(MARKER_ZINDEX.SELECTED);
 
                                     let uncolorColsure = (function (groupId) {
                                         return function (event) {
@@ -735,10 +751,8 @@
                                                 .markers.forEach(
                                                     function (element,
                                                         index) {
-                                                        element.setIcon(
-                                                            MARKER_ICONS
-                                                            .DEFAULT
-                                                        )
+                                                        element.setIcon(getMarkerIcon(groupType));
+                                                        element.setZIndex(getMarkerZIndex(groupType));
                                                     });
 
                                             if (groupId ==
@@ -829,9 +843,14 @@
                                     });
                                 }
                             }
+
+                            let groupType = exposureGroups[key].elements[0].groupType;
+                            exposureGroups[key].markers.forEach( function (element,index) {
+                                                                        element.setIcon(getMarkerIcon(groupType));
+                                                                        element.setZIndex(getMarkerZIndex(groupType));
+                                                                    });
                         }
-                        //auto-classify all points
-                        toggleClassification();
+
                         initDateSlider(exposureJSON[0].time, exposureJSON[exposureJSON.length - 1].time);
                         updateStats();
                     };
@@ -1033,61 +1052,71 @@
                     }
                 }
             };
+            
+            if(isInitalized(exposureGroups))
+            {
+                let exposureGroupKeys = Object.keys(exposureGroups);
+                for (const key of exposureGroupKeys) {
+                    let group = exposureGroups[key];
+                    let groupType = group.elements[0].groupType;
 
-            let exposureGroupKeys = Object.keys(exposureGroups);
-            for (const key of exposureGroupKeys) {
-                let group = exposureGroups[key];
-                let groupType = group.elements[0].groupType;
+                    if (groupType == GROUP_TYPES.TRAVEL) {
+                        hideGroupMarkers($("#hide-travel").prop("checked"), group);
+                    } else {
+                        let groupTimeBoundsStartTime = group.elements[0].time;
+                        let groupTimeBoundsEndTime = group.elements[group.elements.length - 1].time;
+                        let groupTimeBounds = (groupTimeBoundsEndTime - groupTimeBoundsStartTime) / incrementFactor;
 
-                if (groupType == GROUP_TYPES.TRAVEL) {
-                    hideGroupMarkers($("#hide-travel").prop("checked"), group);
-                } else {
-                    let groupTimeBoundsStartTime = group.elements[0].time;
-                    let groupTimeBoundsEndTime = group.elements[group.elements.length - 1].time;
-                    let groupTimeBounds = (groupTimeBoundsEndTime - groupTimeBoundsStartTime) / incrementFactor;
-
-                    if (groupTimeBounds < 60) {
-                        if (groupTimeBounds < 30) {
-                            if (groupTimeBounds < 15) {
-                                hideGroupMarkers($("#hide-15").prop("checked") || $("#hide-30").prop("checked") ||
-                                    $(
-                                        "#hide-60").prop("checked"), group);
+                        if (groupTimeBounds < 60) {
+                            if (groupTimeBounds < 30) {
+                                if (groupTimeBounds < 15) {
+                                    hideGroupMarkers($("#hide-15").prop("checked") || $("#hide-30").prop("checked") ||
+                                        $(
+                                            "#hide-60").prop("checked"), group);
+                                } else {
+                                    hideGroupMarkers($("#hide-30").prop("checked") || $("#hide-60").prop("checked"),
+                                        group);
+                                }
                             } else {
-                                hideGroupMarkers($("#hide-30").prop("checked") || $("#hide-60").prop("checked"),
-                                    group);
+                                hideGroupMarkers($("#hide-60").prop("checked"), group);
                             }
                         } else {
-                            hideGroupMarkers($("#hide-60").prop("checked"), group);
+                            group.elements.forEach(function (element, index) {
+                                applyTimeWindow(element);
+                            });
                         }
-                    } else {
-                        group.elements.forEach(function (element, index) {
-                            applyTimeWindow(element);
-                        });
                     }
                 }
+                updateStats();
             }
-            updateStats();
         }
 
-        function toggleClassification() {
+        function getMarkerIcon(groupType) {
             let markerIcon = MARKER_ICONS.DEFAULT;
-
-            let exposureGroupKeys = Object.keys(exposureGroups);
-            for (const key of exposureGroupKeys) {
-                //if ($("#classify").prop("checked")) {
-                let groupType = exposureGroups[key].elements[0].groupType;
-                if (groupType == GROUP_TYPES.RECURRING) {
-                    markerIcon = MARKER_ICONS.RECURRING;
-                } else if (groupType == GROUP_TYPES.TRANSIENT) {
-                    markerIcon = MARKER_ICONS.TRANSIENT;
-                } else if (groupType == GROUP_TYPES.TRAVEL) {
-                    markerIcon = MARKER_ICONS.TRAVEL;
-                }
-                //}
-                exposureGroups[key].markers.forEach(function (element, index) {
-                    element.setIcon(markerIcon);
-                })
+            
+            if (groupType == GROUP_TYPES.RECURRING) {
+                markerIcon = MARKER_ICONS.RECURRING;
+            } else if (groupType == GROUP_TYPES.TRANSIENT) {
+                markerIcon = MARKER_ICONS.TRANSIENT;
+            } else if (groupType == GROUP_TYPES.TRAVEL) {
+                markerIcon = MARKER_ICONS.TRAVEL;
             }
+
+            return markerIcon;
+        }
+
+        function getMarkerZIndex(groupType) {
+            let markerZIndex = MARKER_ZINDEX.DEFAULT;
+            
+            if (groupType == GROUP_TYPES.RECURRING) {
+                markerZIndex = MARKER_ZINDEX.RECURRING;
+            } else if (groupType == GROUP_TYPES.TRANSIENT) {
+                markerZIndex = MARKER_ZINDEX.TRANSIENT;
+            } else if (groupType == GROUP_TYPES.TRAVEL) {
+                markerZIndex = MARKER_ZINDEX.TRAVEL;
+            }
+
+            return markerZIndex;
         }
 
         function zoomToExtent(mapBounds) {
