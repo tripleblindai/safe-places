@@ -1,0 +1,11 @@
+# Below is the global registry of health authorities for Safe Places.
+# Any organization can declare itself a health authority here, ust enter a PR and it will be merged into the registry.
+# A health authority must host a file created by the Safe Paths publisher tool at the url provided.
+
+Authorities:
+
+- Steve's Example Health Authority:
+  - {url: "https://raw.githack.com/tripleblindmarket/safe-places/develop/examples/safe-paths.json"}
+
+- Ramesh's Example Health Org:
+  - {url: "https://raw.githack.com/tripleblindmarket/safe-places/develop/examples/anotherlocale-safe-paths.json"}
