@@ -1,0 +1,17 @@
+{
+   "authority_name":"Ramesh's Testing Organization",
+   "publish_date_utc":"1584921583",
+   "info_website":"https://www.cdc.gov/coronavirus/2019-nCoV/index.html",
+   "concern_points":[
+      {
+         "time":124,
+         "latitude":11.34,
+         "longitude":11.34
+      },
+      {
+         "time":567,
+         "latitude":11.34,
+         "longitude":11.44
+      }
+   ]
+}
