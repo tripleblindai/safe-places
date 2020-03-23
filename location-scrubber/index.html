@@ -528,7 +528,7 @@
                 if (isInitalized(exposurePoints)) {
                     let areaBounds = selectedArea.getBounds();
                     exposurePoints.forEach(function (element, index) {
-                        if (areaBounds.contains(element.getPosition())) {
+                        if(isInitalized(element.getMap()) && areaBounds.contains(element.getPosition())) {
                             deleteExposure(index, element);
                         }
                     });
@@ -564,7 +564,8 @@
         function clearMarkers() {
             if (isInitalized(exposurePoints)) {
                 exposurePoints.forEach(function (element, index) {
-                    if (isInitalized(element)) {
+                    if(isInitalized(element)) {
+                        selectedMarker = element;
                         deleteMarker(element);
                     }
                 });
@@ -640,7 +641,7 @@
                 }
             }
 
-            result.sort();
+            result.sort(function (a,b){ return a.time - b.time; });
             return result;
         }
 
@@ -854,9 +855,9 @@
             msStartDate = utcSecondsToMidnight(msStartDate);
             msEndDate = utcSecondsToMidnight(msEndDate);
 
-            let incrementFactor = (1000 * 60 * 60); //milliseconds in one day
-            let dateRange = Math.ceil((msEndDate - msStartDate) / incrementFactor) +
-                1; //number of days to have the slider cover (has to be +1 because we take the end date and move back to midnight)
+            let incrementFactor = (1000 * 60 * 60); //milliseconds in one hour
+            let sliderStepCount = Math.ceil((msEndDate - msStartDate) / incrementFactor) +
+                24; //number of days to have the slider cover (has to be +1 because we take the end date and move back to midnight)
             $(function () {
                 let windowRange = {
                     value: null
@@ -864,8 +865,8 @@
                 $("#slider-range").slider({
                     range: true,
                     min: 0,
-                    max: dateRange,
-                    values: [0, dateRange],
+                    max: sliderStepCount,
+                    values: [0, sliderStepCount],
                     start: (function (windowRange) {
                         return function (event, ui) {
                             let eventSuccess = true;
@@ -934,11 +935,12 @@
                         };
                     })(msStartDate, incrementFactor, windowRange)
                 });
-
+                
                 // Set the display string
-                let startDate = new Date(msStartDate + $("#slider-range").slider("values", 0) *
-                    incrementFactor);
-                let endDate = new Date(msStartDate + $("#slider-range").slider("values", 1) * incrementFactor);
+                msVizStart = msStartDate + ($("#slider-range").slider("values", 0) * incrementFactor);
+                msVizEnd = msStartDate + ($("#slider-range").slider("values", 1) * incrementFactor);
+                let startDate = new Date(msVizStart);
+                let endDate = new Date(msVizEnd);
                 updateDateRange(startDate, endDate);
             });
         }
@@ -1152,7 +1154,7 @@
         }
 
         function erasePoint(event) {
-            if (isInitalized(selectedMarker)) {
+            if(isInitalized(selectedMarker)) {
                 editExposure(event, selectedMarker);
             }
         }
