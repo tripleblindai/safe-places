@@ -795,11 +795,74 @@
                         let groupCount = 0;
                         let exposureGroupKeys = Object.keys(exposureGroups);
                         let travelGroupId = null;
+                        let travelGroupMarkers = [];
+                        let travelGroupDurationMilliseconds = 0;
+                        let travelGroupDistanceMeters = 0;
+                        let lastExposureGroup = null;
+
+                        //this method will add the time and distance covered from the last marker to the current marker
+                        //  if the current marker is an array, it will "chain" all the markers in the array together and add their total time and distance covered too
+                        let addTravelGroupTimeAndDistance = function(fromGroup,toGroup){
+
+                                let duration = 0;
+                                let distance = 0;
+
+                                //add the time from the end of the "from group" to the end of the "to group"
+                                let fromGroupEndTime = 0;
+                                let currentGroupStartTime = toGroup.elements[0].time;
+                                let currentGroupEndTime = toGroup.elements[toGroup.elements.length-1].time;
+
+                                if(isInitalized(fromGroup)){
+                                    fromGroupEndTime = fromGroup.elements[fromGroup.elements.length-1].time;
+                                    duration += (currentGroupStartTime - fromGroupEndTime);
+                                }
+
+                                duration += (currentGroupEndTime - currentGroupStartTime);
+
+                                //add the distance from the end of the "from group" to the start of the "to group"
+                                if(isInitalized(fromGroup)){
+                                    let fromGroupEndPosition = fromGroup.markers[fromGroup.markers.length-1].getPosition();
+                                    let toGroupStartPosition = toGroup.markers[0].getPosition();
+
+                                    distance += google.maps.geometry.spherical.computeDistanceBetween(fromGroupEndPosition, toGroupStartPosition);
+                                }
+
+                                //add the distance traveled within the "to group"
+                                toGroup.markers.forEach(function (element, index) {
+                                    if(index > 0)
+                                    {
+                                        distance += google.maps.geometry.spherical.computeDistanceBetween(toGroup.markers[index-1].getPosition(), element.getPosition());
+                                    }
+                                });
+
+                                travelGroupDurationMilliseconds += duration;
+                                travelGroupDistanceMeters += distance;
+                            };
+
+                        let updateTravelGroupMarkers = function(travelGroupMarkers, travelGroupId, travelGroupDurationMilliseconds, travelGroupDistanceMeters){
+                            let travelGroupDurationHours = travelGroupDurationMilliseconds / (1000 * 60 * 60); //convert to hours
+                            let travelGroupDistanceKilometers = travelGroupDistanceMeters/1000;
+                            let travelGroupSpeed = 0; //mph
+
+                            if(travelGroupDurationHours > 0)
+                            {
+                                travelGroupSpeed = travelGroupDistanceKilometers/travelGroupDurationHours;
+                            }
+
+                            //round to 2 decimal places...soooo ugly in javascript
+                            travelGroupSpeed = Math.round((travelGroupSpeed + Number.EPSILON) * 100) / 100;
+
+                            travelGroupMarkers.forEach(function (element, index) {
+                                element.setTitle(element.getTitle() +"\nTravel Group "+ travelGroupId +" "+ travelGroupSpeed +"kph");
+                            });
+                        };
+
                         for (const key of exposureGroupKeys) {
                             groupCount++;
 
                             let foundIntersection = false;
                             for (var i = groupCount; i < exposureGroups.length; i++) {
+                                //We may need to put some time boundaries on this because travel groups could intersect if you travel a similar route periodically.
                                 if (exposureGroups[key].bounds.intersects(exposureGroups[exposureGroupKeys[
                                         i]].bounds)) {
                                     foundInteresection = true;
@@ -819,23 +882,29 @@
                                 let travelMaxGroupSize = 3;
                                 if (exposureGroups[key].elements.length <= travelMaxGroupSize) {
                                     //groupCount is currently pointing to the item in front of the current group identified by key
-                                    //  we want to check to see if the previous group (two back from current groupCount value) was a travel group.
+                                    //  if we are the first group (no previous group to compare with) OR if the previous group (two back from current groupCount value) was a travel group.
                                     //  If so, we set keep the current travelGroupId and use that value.
                                     //  If not, we increment the travelGroupId and take that value instead.
                                     //  but we only look back if we are not the first group
-                                    if (groupCount > 1) {
-                                        if (exposureGroups[exposureGroupKeys[groupCount - 2]].elements[0]
-                                            .groupType != GROUP_TYPES.TRAVEL) {
-                                            if (travelGroupId === undefined || travelGroupId === null) {
-                                                travelGroupId = 0;
-                                            } else {
-                                                travelGroupId++;
-                                            }
+                                    if(groupCount == 1 || exposureGroups[exposureGroupKeys[groupCount - 2]].elements[0]
+                                        .groupType != GROUP_TYPES.TRAVEL) {
+                                        if(groupCount == 1 || !isInitalized(travelGroupId)) {
+                                            travelGroupId = 0;
+                                        } else {
+                                            travelGroupId++;
                                         }
                                     }
                                     exposureGroups[key].elements.forEach(function (element, index) {
                                         element.groupType = GROUP_TYPES.TRAVEL;
                                         element.travelGroupId = travelGroupId;
+                                    });
+                                    
+                                    //update current travel group's duration and distance
+                                    addTravelGroupTimeAndDistance(lastExposureGroup, exposureGroups[key]);
+
+                                    //add all the travel group markers to the list to be updated
+                                    exposureGroups[key].markers.forEach(function (element, index) {
+                                        travelGroupMarkers.push(element);
                                     });
                                 } else {
                                     exposureGroups[key].elements.forEach(function (element, index) {
@@ -843,13 +912,43 @@
                                     });
                                 }
                             }
-
+                            
                             let groupType = exposureGroups[key].elements[0].groupType;
+
+                            //every time we encounter a non-travel group OR we get to the lasst exposureGroup, close out any open travel groups
+                            if(
+                                (travelGroupMarkers.length > 0)
+                                    &&
+                                (
+                                    (groupType != GROUP_TYPES.TRAVEL)
+                                        ||
+                                    (key == exposureGroupKeys[exposureGroupKeys.length-1])
+                                )
+                            )
+                            {
+                                if(groupType != GROUP_TYPES.TRAVEL)
+                                {
+                                    //before we close it, update current travel group's duration and distance from its last marker to this non-travel groups first marker
+                                    addTravelGroupTimeAndDistance(lastExposureGroup, {elements: [exposureGroups[key].elements[0]], markers: [exposureGroups[key].markers[0]]});
+                                }
+                                
+                                updateTravelGroupMarkers(travelGroupMarkers,travelGroupId,travelGroupDurationMilliseconds,travelGroupDistanceMeters);
+
+                                //close out the travel group metrics that we just updated
+                                travelGroupMarkers = [];
+                                travelGroupDurationMilliseconds = 0;
+                                travelGroupDistanceMeters = 0;
+                            }
+
                             exposureGroups[key].markers.forEach( function (element,index) {
                                                                         element.setIcon(getMarkerIcon(groupType));
                                                                         element.setZIndex(getMarkerZIndex(groupType));
                                                                     });
+                            
+                            //record the last exposure group so that when we encounter a travel group we can calculate the distance between that group and the last marker of the last group
+                            lastExposureGroup = exposureGroups[key];
                         }
+                        travelGroupMarkers = null; //free memory
 
                         initDateSlider(exposureJSON[0].time, exposureJSON[exposureJSON.length - 1].time);
                         updateStats();
