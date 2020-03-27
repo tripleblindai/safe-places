@@ -469,7 +469,7 @@
                 }
             });
 
-            google.maps.event.addListener(map, 'click', function(event){
+            google.maps.event.addListener(map, 'click', function (event) {
                 selectNone();
             });
 
@@ -540,7 +540,7 @@
                 if (isInitalized(exposurePoints)) {
                     let areaBounds = selectedArea.getBounds();
                     exposurePoints.forEach(function (element, index) {
-                        if(isInitalized(element.getMap()) && areaBounds.contains(element.getPosition())) {
+                        if (isInitalized(element.getMap()) && areaBounds.contains(element.getPosition())) {
                             deleteExposure(index, element);
                         }
                     });
@@ -576,7 +576,7 @@
         function clearMarkers() {
             if (isInitalized(exposurePoints)) {
                 exposurePoints.forEach(function (element, index) {
-                    if(isInitalized(element)) {
+                    if (isInitalized(element)) {
                         selectedMarker = element;
                         deleteMarker(element);
                     }
@@ -653,7 +653,9 @@
                 }
             }
 
-            result.sort(function (a,b){ return a.time - b.time; });
+            result.sort(function (a, b) {
+                return a.time - b.time;
+            });
             return result;
         }
 
@@ -733,13 +735,15 @@
                                     selectNone();
                                     enableDelete(false);
 
-                                    let groupType = exposureGroups[groupId].elements[0].groupType;
+                                    let groupType = exposureGroups[groupId]
+                                        .elements[0].groupType;
 
                                     // when we click a marker set all the markers in that group to purple
                                     exposureGroups[groupId].markers.forEach(
                                         function (element, index) {
                                             element.setIcon(MARKER_ICONS.GROUP);
-                                            element.setZIndex(MARKER_ZINDEX.GROUP);
+                                            element.setZIndex(MARKER_ZINDEX
+                                                .GROUP);
                                         });
                                     //then set the clicked marker to green
                                     thisMarker.setIcon(MARKER_ICONS.SELECTED);
@@ -751,8 +755,15 @@
                                                 .markers.forEach(
                                                     function (element,
                                                         index) {
-                                                        element.setIcon(getMarkerIcon(groupType));
-                                                        element.setZIndex(getMarkerZIndex(groupType));
+                                                        element.setIcon(
+                                                            getMarkerIcon(
+                                                                groupType
+                                                            ));
+                                                        element
+                                                            .setZIndex(
+                                                                getMarkerZIndex(
+                                                                    groupType
+                                                                ));
                                                     });
 
                                             if (groupId ==
@@ -802,58 +813,67 @@
 
                         //this method will add the time and distance covered from the last marker to the current marker
                         //  if the current marker is an array, it will "chain" all the markers in the array together and add their total time and distance covered too
-                        let addTravelGroupTimeAndDistance = function(fromGroup,toGroup){
+                        let addTravelGroupTimeAndDistance = function (fromGroup, toGroup) {
 
-                                let duration = 0;
-                                let distance = 0;
+                            let duration = 0;
+                            let distance = 0;
 
-                                //add the time from the end of the "from group" to the end of the "to group"
-                                let fromGroupEndTime = 0;
-                                let currentGroupStartTime = toGroup.elements[0].time;
-                                let currentGroupEndTime = toGroup.elements[toGroup.elements.length-1].time;
+                            //add the time from the end of the "from group" to the end of the "to group"
+                            let fromGroupEndTime = 0;
+                            let currentGroupStartTime = toGroup.elements[0].time;
+                            let currentGroupEndTime = toGroup.elements[toGroup.elements.length - 1]
+                                .time;
 
-                                if(isInitalized(fromGroup)){
-                                    fromGroupEndTime = fromGroup.elements[fromGroup.elements.length-1].time;
-                                    duration += (currentGroupStartTime - fromGroupEndTime);
+                            if (isInitalized(fromGroup)) {
+                                fromGroupEndTime = fromGroup.elements[fromGroup.elements.length - 1]
+                                    .time;
+                                duration += (currentGroupStartTime - fromGroupEndTime);
+                            }
+
+                            duration += (currentGroupEndTime - currentGroupStartTime);
+
+                            //add the distance from the end of the "from group" to the start of the "to group"
+                            if (isInitalized(fromGroup)) {
+                                let fromGroupEndPosition = fromGroup.markers[fromGroup.markers.length -
+                                    1].getPosition();
+                                let toGroupStartPosition = toGroup.markers[0].getPosition();
+
+                                distance += google.maps.geometry.spherical.computeDistanceBetween(
+                                    fromGroupEndPosition, toGroupStartPosition);
+                            }
+
+                            //add the distance traveled within the "to group"
+                            toGroup.markers.forEach(function (element, index) {
+                                if (index > 0) {
+                                    distance += google.maps.geometry.spherical
+                                        .computeDistanceBetween(toGroup.markers[index - 1]
+                                            .getPosition(), element.getPosition());
                                 }
+                            });
 
-                                duration += (currentGroupEndTime - currentGroupStartTime);
+                            travelGroupDurationMilliseconds += duration;
+                            travelGroupDistanceMeters += distance;
+                        };
 
-                                //add the distance from the end of the "from group" to the start of the "to group"
-                                if(isInitalized(fromGroup)){
-                                    let fromGroupEndPosition = fromGroup.markers[fromGroup.markers.length-1].getPosition();
-                                    let toGroupStartPosition = toGroup.markers[0].getPosition();
-
-                                    distance += google.maps.geometry.spherical.computeDistanceBetween(fromGroupEndPosition, toGroupStartPosition);
-                                }
-
-                                //add the distance traveled within the "to group"
-                                toGroup.markers.forEach(function (element, index) {
-                                    if(index > 0)
-                                    {
-                                        distance += google.maps.geometry.spherical.computeDistanceBetween(toGroup.markers[index-1].getPosition(), element.getPosition());
-                                    }
-                                });
-
-                                travelGroupDurationMilliseconds += duration;
-                                travelGroupDistanceMeters += distance;
-                            };
-
-                        let updateTravelGroupMarkers = function(travelGroupMarkers, travelGroupId, travelGroupDurationMilliseconds, travelGroupDistanceMeters){
-                            let travelGroupDurationHours = travelGroupDurationMilliseconds / (1000 * 60 * 60); //convert to hours
-                            let travelGroupDistanceKilometers = travelGroupDistanceMeters/1000;
+                        let updateTravelGroupMarkers = function (travelGroupMarkers, travelGroupId,
+                            travelGroupDurationMilliseconds, travelGroupDistanceMeters) {
+                            let travelGroupDurationHours = travelGroupDurationMilliseconds / (1000 *
+                                60 * 60); //convert to hours
+                            let travelGroupDistanceKilometers = travelGroupDistanceMeters / 1000;
                             let travelGroupSpeed = 0; //mph
 
-                            if(travelGroupDurationHours > 0)
-                            {
-                                travelGroupSpeed = travelGroupDistanceKilometers/travelGroupDurationHours;
+                            if (travelGroupDurationHours > 0) {
+                                travelGroupSpeed = travelGroupDistanceKilometers /
+                                    travelGroupDurationHours;
                             }
 
                             //round to 2 decimal places...soooo ugly in javascript
-                            travelGroupSpeed = Math.round((travelGroupSpeed + Number.EPSILON) * 100) / 100;
+                            travelGroupSpeed = Math.round((travelGroupSpeed + Number.EPSILON) * 100) /
+                                100;
 
                             travelGroupMarkers.forEach(function (element, index) {
-                                element.setTitle(element.getTitle() +"\nTravel Group "+ travelGroupId +" "+ travelGroupSpeed +"kph");
+                                element.setTitle(element.getTitle() + "\nTravel Group " +
+                                    travelGroupId + " " + travelGroupSpeed + "kph");
                             });
                         };
 
@@ -886,9 +906,10 @@
                                     //  If so, we set keep the current travelGroupId and use that value.
                                     //  If not, we increment the travelGroupId and take that value instead.
                                     //  but we only look back if we are not the first group
-                                    if(groupCount == 1 || exposureGroups[exposureGroupKeys[groupCount - 2]].elements[0]
+                                    if (groupCount == 1 || exposureGroups[exposureGroupKeys[groupCount - 2]]
+                                        .elements[0]
                                         .groupType != GROUP_TYPES.TRAVEL) {
-                                        if(groupCount == 1 || !isInitalized(travelGroupId)) {
+                                        if (groupCount == 1 || !isInitalized(travelGroupId)) {
                                             travelGroupId = 0;
                                         } else {
                                             travelGroupId++;
@@ -898,7 +919,7 @@
                                         element.groupType = GROUP_TYPES.TRAVEL;
                                         element.travelGroupId = travelGroupId;
                                     });
-                                    
+
                                     //update current travel group's duration and distance
                                     addTravelGroupTimeAndDistance(lastExposureGroup, exposureGroups[key]);
 
@@ -912,27 +933,27 @@
                                     });
                                 }
                             }
-                            
+
                             let groupType = exposureGroups[key].elements[0].groupType;
 
                             //every time we encounter a non-travel group OR we get to the lasst exposureGroup, close out any open travel groups
-                            if(
-                                (travelGroupMarkers.length > 0)
-                                    &&
+                            if (
+                                (travelGroupMarkers.length > 0) &&
                                 (
-                                    (groupType != GROUP_TYPES.TRAVEL)
-                                        ||
-                                    (key == exposureGroupKeys[exposureGroupKeys.length-1])
+                                    (groupType != GROUP_TYPES.TRAVEL) ||
+                                    (key == exposureGroupKeys[exposureGroupKeys.length - 1])
                                 )
-                            )
-                            {
-                                if(groupType != GROUP_TYPES.TRAVEL)
-                                {
+                            ) {
+                                if (groupType != GROUP_TYPES.TRAVEL) {
                                     //before we close it, update current travel group's duration and distance from its last marker to this non-travel groups first marker
-                                    addTravelGroupTimeAndDistance(lastExposureGroup, {elements: [exposureGroups[key].elements[0]], markers: [exposureGroups[key].markers[0]]});
+                                    addTravelGroupTimeAndDistance(lastExposureGroup, {
+                                        elements: [exposureGroups[key].elements[0]],
+                                        markers: [exposureGroups[key].markers[0]]
+                                    });
                                 }
-                                
-                                updateTravelGroupMarkers(travelGroupMarkers,travelGroupId,travelGroupDurationMilliseconds,travelGroupDistanceMeters);
+
+                                updateTravelGroupMarkers(travelGroupMarkers, travelGroupId,
+                                    travelGroupDurationMilliseconds, travelGroupDistanceMeters);
 
                                 //close out the travel group metrics that we just updated
                                 travelGroupMarkers = [];
@@ -940,11 +961,11 @@
                                 travelGroupDistanceMeters = 0;
                             }
 
-                            exposureGroups[key].markers.forEach( function (element,index) {
-                                                                        element.setIcon(getMarkerIcon(groupType));
-                                                                        element.setZIndex(getMarkerZIndex(groupType));
-                                                                    });
-                            
+                            exposureGroups[key].markers.forEach(function (element, index) {
+                                element.setIcon(getMarkerIcon(groupType));
+                                element.setZIndex(getMarkerZIndex(groupType));
+                            });
+
                             //record the last exposure group so that when we encounter a travel group we can calculate the distance between that group and the last marker of the last group
                             lastExposureGroup = exposureGroups[key];
                         }
@@ -1053,7 +1074,7 @@
                         };
                     })(msStartDate, incrementFactor, windowRange)
                 });
-                
+
                 // Set the display string
                 msVizStart = msStartDate + ($("#slider-range").slider("values", 0) * incrementFactor);
                 msVizEnd = msStartDate + ($("#slider-range").slider("values", 1) * incrementFactor);
@@ -1151,9 +1172,8 @@
                     }
                 }
             };
-            
-            if(isInitalized(exposureGroups))
-            {
+
+            if (isInitalized(exposureGroups)) {
                 let exposureGroupKeys = Object.keys(exposureGroups);
                 for (const key of exposureGroupKeys) {
                     let group = exposureGroups[key];
@@ -1192,7 +1212,7 @@
 
         function getMarkerIcon(groupType) {
             let markerIcon = MARKER_ICONS.DEFAULT;
-            
+
             if (groupType == GROUP_TYPES.RECURRING) {
                 markerIcon = MARKER_ICONS.RECURRING;
             } else if (groupType == GROUP_TYPES.TRANSIENT) {
@@ -1206,7 +1226,7 @@
 
         function getMarkerZIndex(groupType) {
             let markerZIndex = MARKER_ZINDEX.DEFAULT;
-            
+
             if (groupType == GROUP_TYPES.RECURRING) {
                 markerZIndex = MARKER_ZINDEX.RECURRING;
             } else if (groupType == GROUP_TYPES.TRANSIENT) {
@@ -1282,7 +1302,7 @@
         }
 
         function erasePoint(event) {
-            if(isInitalized(selectedMarker)) {
+            if (isInitalized(selectedMarker)) {
                 editExposure(event, selectedMarker);
             }
         }
