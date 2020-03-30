@@ -1,0 +1,14 @@
+@import "../../scss/global";
+
+.wrapper {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 30vw;
+}
+
+.content {
+  width: 70vw;
+}
