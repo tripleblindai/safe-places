@@ -4,7 +4,7 @@ import Sidebar from "./Sidebar";
 import Wrapper from "../Wrapper";
 
 export default function PathEditor() {
-  const targetRef = useRef<HTMLDivElement>();
+  /* const targetRef = useRef<HTMLDivElement>();
   const [dimensions, setDimensions] = useState({
     width: 0,
     height: 0
@@ -16,11 +16,11 @@ export default function PathEditor() {
         height: targetRef?.current?.offsetHeight
       });
     }
-  }, []);
+  }, []);*/
 
   return (
     <Wrapper sidebar={<Sidebar />}>
-      <Map dimensions={dimensions} />
+      <Map />
     </Wrapper>
   );
 }

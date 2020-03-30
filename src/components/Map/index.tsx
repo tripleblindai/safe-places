@@ -6,8 +6,8 @@ type MapProps = {
   dimensions: { width: number; height: number };
 };
 
-export default function Map({ dimensions }: MapProps) {
-  console.log(dimensions);
+//{ dimensions }: MapProps
+export default function Map() {
   const [viewport, setViewport] = useState({
     width: 400,
     height: 300,

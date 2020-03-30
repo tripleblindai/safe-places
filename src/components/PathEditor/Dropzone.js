@@ -1,7 +1,10 @@
 import React, { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
+import { addTrack, generateWarnings } from "../../actions";
+import { getAllTracks } from "../../selectors";
+import { connect } from "react-redux";
 
-function MyDropzone() {
+function MyDropzone({ addTrackTrigger }) {
   const onDrop = useCallback(acceptedFiles => {
     acceptedFiles.forEach(file => {
       const reader = new FileReader();
@@ -11,9 +14,10 @@ function MyDropzone() {
       reader.onload = () => {
         // Do whatever you want with the file contents
         const binaryStr = reader.result;
-        console.log(binaryStr);
+        addTrackTrigger(JSON.parse(binaryStr));
+        console.log(JSON.parse(binaryStr));
       };
-      reader.readAsArrayBuffer(file);
+      reader.readAsText(file);
     });
   }, []);
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
@@ -26,4 +30,14 @@ function MyDropzone() {
   );
 }
 
-export default MyDropzone;
+const mapStateToProps = state => {
+  return {
+    track: getAllTracks(state)
+  };
+};
+
+const mapDispatchToProps = dispatch => ({
+  addTrackTrigger: data => dispatch(addTrack(data))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(MyDropzone);
