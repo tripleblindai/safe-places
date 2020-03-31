@@ -1,0 +1,93 @@
+@import "../../scss/global";
+
+.empty {
+  padding: $spacing-lg;
+  margin: 0;
+  display: flex !important;
+  //flex: 1;
+  background: $ui-02;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  &--section {
+    padding: $spacing-xl 0;
+    text-align: left;
+    flex-direction: row;
+    justify-content: space-between;
+    h2 {
+      @include typescale("epsilon");
+    }
+    p {
+      opacity: 0.6;
+      @include typescale("caption");
+    }
+    .empty__icon {
+      margin-bottom: 1em;
+      display: none;
+      svg,
+      .svg-inline--fa {
+        width: 5rem;
+        height: 5rem;
+        path {
+          fill: $interactive-01;
+        }
+        margin-bottom: $spacing-xs;
+      }
+    }
+    //border-bottom: 1px solid $ui-04;
+  }
+  &--large {
+    min-height: 17rem;
+    padding: 2rem 0;
+    height: 100%;
+    width: 100%;
+
+    > div {
+      margin-top: 0rem;
+    }
+
+    h2 {
+      margin-bottom: $spacing-xs;
+    }
+
+    p {
+      color: $ui-05;
+    }
+    .empty__button {
+      margin-top: $spacing-md;
+      .wfp--btn {
+        margin: $spacing-2xs;
+      }
+    }
+  }
+}
+
+.empty__icon {
+  svg,
+  .svg-inline--fa {
+    width: 3rem;
+    height: 3rem;
+    path {
+      fill: $interactive-01;
+    }
+    margin-bottom: $spacing-xs;
+  }
+  .empty--large & {
+    padding: 0 2rem;
+    //height: 100%;
+    img {
+      width: 35rem;
+      max-width: 100%;
+      max-height: 15rem;
+      height: auto;
+    }
+    svg,
+    .svg-inline--fa {
+      width: 8rem;
+      height: 8rem;
+    }
+    margin-bottom: $spacing-lg;
+  }
+}

@@ -8,7 +8,6 @@ import { addSelected } from "../../actions";
 import { getSelectedTracksData } from "../../selectors";
 
 const PopupWrapper = ({ addSelectedTrigger, selectedTracksData }) => {
-  console.log("selectedTracksData", selectedTracksData.length);
   if (selectedTracksData && selectedTracksData.length === 1) {
     return (
       <Popup

@@ -6,8 +6,12 @@ import { Button, List, ListItem } from "@wfp/ui";
 import styles from "./styles.module.scss";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrashAlt } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faTrashAlt,
+  faMapMarkerQuestion
+} from "@fortawesome/pro-solid-svg-icons";
 import moment from "moment";
+import Empty from "../Empty";
 
 function SidebarContent({
   addSelectedTrigger,
@@ -16,7 +20,17 @@ function SidebarContent({
   track
 }) {
   return (
-    <div>
+    <>
+      {!track.concern_points && (
+        <Empty
+          title="No file opened"
+          className="attendance-detail-empt"
+          kind="large"
+          icon={<FontAwesomeIcon icon={faMapMarkerQuestion} size="1x" />}
+        >
+          Please open a file
+        </Empty>
+      )}
       {/* Loaded: {JSON.stringify(track)} */}
       {track.concern_points &&
         track.concern_points.map((e, i) => (
@@ -46,7 +60,7 @@ function SidebarContent({
             ></Button>
           </div>
         ))}
-    </div>
+    </>
   );
 }
 
