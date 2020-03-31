@@ -1,8 +1,11 @@
 import React, { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { addTrack, generateWarnings } from "../../actions";
-import { getAllTracks } from "../../selectors";
+//import { getAllTracks } from "../../selectors";
 import { connect } from "react-redux";
+import { Button } from "@wfp/ui";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFolderPlus } from "@fortawesome/pro-solid-svg-icons";
 
 function MyDropzone({ addTrackTrigger }) {
   const onDrop = useCallback(acceptedFiles => {
@@ -25,14 +28,16 @@ function MyDropzone({ addTrackTrigger }) {
   return (
     <div {...getRootProps()}>
       <input {...getInputProps()} />
-      <p>Drag 'n' drop some files here, or click to select files</p>
+      <Button iconReverse icon={<FontAwesomeIcon icon={faFolderPlus} />}>
+        Load
+      </Button>
     </div>
   );
 }
 
 const mapStateToProps = state => {
   return {
-    track: getAllTracks(state)
+    // track: getAllTracks(state)
   };
 };
 

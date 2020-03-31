@@ -1,5 +1,5 @@
 import React, { useRef, useState, useLayoutEffect } from "react";
-import styles from "./style.module.scss";
+import styles from "./styles.module.scss";
 
 type AppProps = { children: any; sidebar: any };
 

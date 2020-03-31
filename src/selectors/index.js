@@ -3,8 +3,10 @@ export const getCurrentStore = (state, ownProps) =>
 export const getAllPositions = state => state.positions;
 export const getAllWarnings = state => state.warnings;
 export const getDetail = state => state.detail;
-export const getAllTracks = state =>
-  Array.isArray(state.infections) ? state.infections : [];
+export const getTrack = state => state.reducer.tracks;
+export const getTrackPath = state =>
+  state.reducer.tracks ? state.reducer.tracks.concern_points : [];
+
 export const countTracks = state => state.infections.length;
 export const countPositions = state => state.positions.length;
 export const countWarnings = state => state.warnings.length;

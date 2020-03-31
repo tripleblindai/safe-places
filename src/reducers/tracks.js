@@ -1,12 +1,15 @@
 import {
   ADD_TRACK,
-  DELETE_WARNING,
-  EDIT_WARNING,
+  DELETE_TRACK_ENTRY,
+  MOVE_TRACK_ENTRY,
+  EDIT_TRACK,
   COMPLETE_WARNING,
   COMPLETE_ALL_WARNINGS,
   CLEAR_ALL,
   CLEAR_COMPLETED
 } from "../constants/ActionTypes";
+
+import arrayMove from "array-move";
 
 const initialState = [];
 
@@ -14,18 +17,25 @@ export default function todos(state = initialState, action) {
   console.log("dispatch called", action);
   switch (action.type) {
     case ADD_TRACK:
-      return [
-        ...state,
-        {
-          id: state.reduce((maxId, todo) => Math.max(todo.id, maxId), -1) + 1,
-          data: action.data
-        }
-      ];
+      return action.data;
 
-    case DELETE_WARNING:
-      return state.filter(todo => todo.id !== action.id);
+    case DELETE_TRACK_ENTRY:
+      const concern_points = state.concern_points.filter(
+        e => e.time !== action.data
+      );
+      console.log("state", concern_points);
+      return { ...state, concern_points };
 
-    case EDIT_WARNING:
+    case MOVE_TRACK_ENTRY:
+      const findIndex = state.findIndex(e => e.time !== action.time);
+      const points = arrayMove(
+        state.concern_points,
+        findIndex,
+        findIndex + action.difference
+      );
+      return { ...state, concern_points: points };
+
+    /* case EDIT_WARNING:
       return state.map(todo =>
         todo.id === action.id ? { ...todo, text: action.text } : todo
       );
@@ -46,7 +56,7 @@ export default function todos(state = initialState, action) {
       return state.filter(todo => todo.completed === false);
 
     case CLEAR_ALL:
-      return initialState;
+      return initialState;*/
 
     default:
       return state;

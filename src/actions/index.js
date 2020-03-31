@@ -12,9 +12,15 @@ export const setVisibilityFilter = filter => ({
 });
 
 export const addTrack = data => {
-  console.log("data", data);
   return {
     type: types.ADD_TRACK,
+    data
+  };
+};
+
+export const deleteTrackEntry = data => {
+  return {
+    type: types.DELETE_TRACK_ENTRY,
     data
   };
 };
