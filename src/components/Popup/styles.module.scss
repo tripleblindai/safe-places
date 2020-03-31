@@ -1,0 +1,15 @@
+@import "../../scss/global";
+
+.popup {
+  text-align: center;
+}
+.title {
+  @include typescale("zeta");
+}
+
+.time {
+  display: block;
+  font-weight: normal;
+  color: $text-02;
+  @include typescale("caption");
+}

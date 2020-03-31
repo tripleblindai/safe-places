@@ -7,6 +7,9 @@
 
 .sidebar {
   width: 30vw;
+  box-shadow: 3px 3px 7px rgba(#000, 0.05);
+  position: relative;
+  z-index: 1;
 }
 
 .content {

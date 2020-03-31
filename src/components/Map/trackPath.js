@@ -12,9 +12,7 @@ const track = ({ trackPath }) => {
     return {
       type: "Feature",
       properties: {
-        deviceId: "aa",
-        accuracy: point.gps_status_acc,
-        storeId: point._id
+        time: point.time
       },
       geometry: {
         type: "Point",

@@ -1,29 +1,31 @@
 import React from "react";
 import { connect } from "react-redux";
-import { getTrack } from "../../selectors";
-import { addTrack, deleteTrackEntry } from "../../actions";
+import { deleteTrackEntry, addSelected } from "../../actions";
+import { getTrack, getSelectedTracks } from "../../selectors";
 import { Button, List, ListItem } from "@wfp/ui";
 import styles from "./styles.module.scss";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCorn,
-  faRaindrops,
-  faCookie,
-  faQuestion,
-  faUserFriends,
-  faTrash,
-  faTrashAlt
-} from "@fortawesome/pro-solid-svg-icons";
+import { faTrashAlt } from "@fortawesome/pro-solid-svg-icons";
 import moment from "moment";
 
-function SidebarContent({ deleteTrackEntryTrigger, track }) {
+function SidebarContent({
+  addSelectedTrigger,
+  deleteTrackEntryTrigger,
+  selectedTracks,
+  track
+}) {
   return (
     <div>
       {/* Loaded: {JSON.stringify(track)} */}
       {track.concern_points &&
-        track.concern_points.map(e => (
-          <div className={styles.item}>
+        track.concern_points.map((e, i) => (
+          <div
+            className={`${styles.item} ${selectedTracks.includes(e.time) &&
+              styles.selectedItem}`}
+            key={i}
+            onClick={() => addSelectedTrigger([e.time])}
+          >
             <div>
               <h3 className={styles.title}>
                 {moment.utc(e.time).format("YYYY-MM-DD")}
@@ -32,7 +34,7 @@ function SidebarContent({ deleteTrackEntryTrigger, track }) {
                 </span>
               </h3>
 
-              <List kind="simple" small>
+              <List kind="simple" colon small>
                 <ListItem title="Latitude">{e.latitude}</ListItem>
                 <ListItem title="Longitude">{e.longitude}</ListItem>
               </List>
@@ -50,11 +52,13 @@ function SidebarContent({ deleteTrackEntryTrigger, track }) {
 
 const mapStateToProps = state => {
   return {
+    selectedTracks: getSelectedTracks(state),
     track: getTrack(state)
   };
 };
 
 const mapDispatchToProps = dispatch => ({
+  addSelectedTrigger: data => dispatch(addSelected(data)),
   deleteTrackEntryTrigger: data => dispatch(deleteTrackEntry(data))
 });
 

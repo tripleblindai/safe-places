@@ -18,6 +18,13 @@ export const addTrack = data => {
   };
 };
 
+export const addSelected = data => {
+  return {
+    type: types.ADD_SELECTED_ENTRY,
+    data
+  };
+};
+
 export const deleteTrackEntry = data => {
   return {
     type: types.DELETE_TRACK_ENTRY,

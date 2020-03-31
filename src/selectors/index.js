@@ -30,6 +30,20 @@ export const getAllFilteredWarnings = state => {
   return filteredWarnings;
 };
 
+export const getSelectedTracksData = state => {
+  const selectedEntries =
+    state.reducer.tracks &&
+    state.reducer.tracks.concern_points &&
+    state.reducer.selectedTracks
+      ? state.reducer.tracks.concern_points.filter(e => {
+          console.log(e.time, state.reducer.selectedTracks[0]);
+          return e.time === state.reducer.selectedTracks[0];
+        })
+      : undefined;
+  return selectedEntries;
+};
+
+export const getSelectedTracks = state => state.reducer.selectedTracks;
 export const countFilteredWarnings = state => {
   const filteredWarnings = state.warnings.filter(
     e => e.matches && e.matches.length >= 1

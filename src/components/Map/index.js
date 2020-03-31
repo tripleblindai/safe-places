@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactMapGL from "react-map-gl";
 import Track from "./trackPath";
 import { token } from "../../constants/mapbox";
 import { connect } from "react-redux";
-import { deleteTrackEntry } from "../../actions";
+import { deleteTrackEntry, addSelected } from "../../actions";
 import { getTrackPath } from "../../selectors";
 import track from "./trackPath";
 import { fromJS } from "immutable";
+import Popup from "../Popup";
 
 import defaultMapStyleJson from "./style.json";
 import WebMercatorViewport from "viewport-mercator-project";
@@ -25,9 +26,6 @@ const currentPointLayer = {
     "circle-stroke-color": "#ffffff"
   }
 };
-
-/*const metersToPixelsAtMaxZoom = (meters, latitude) =>
-  meters / 0.075 / Math.cos((latitude * Math.PI) / 180); */
 
 const selectedPointLayerAccuracy = {
   id: "selectedPointLayerAccuracy",
@@ -51,38 +49,6 @@ const selectedPointLayerAccuracy = {
   },
   filter: ["in", "storeId", "5cdaca36bab5e21e9ee19344"]
 };
-
-/*const selectedPointLayerShadow = {
-  id: "selectedPointLayerShadow",
-  type: "circle",
-  source: "points",
-  interactive: true,
-  paint: {
-    "circle-color": "#000000",
-    "circle-radius": 15,
-    "circle-translate": [0, 3],
-    "circle-opacity": 0.5,
-    "circle-blur": 1,
-    "circle-stroke-width": 0,
-    "circle-stroke-color": "#ffffff"
-  }
-};
-
-const selectedPointLayer = {
-  id: "selectedPointLayer",
-  type: "circle",
-  source: "points",
-  interactive: true,
-  paint: {
-    "circle-color": "#000000",
-    "circle-radius": 15,
-    "circle-translate": [0, 3],
-    "circle-opacity": 0.5,
-    "circle-blur": 1,
-    "circle-stroke-width": 0,
-    "circle-stroke-color": "#ffffff"
-  }
-};*/
 
 const currentPointLayerAccuracy = {
   id: "currentPointLayerAccuracy",
@@ -220,7 +186,7 @@ defaultMapStyle = defaultMapStyle
   )
   .setIn(["sources", "points"], fromJS(emptyFeature));
 
-function Map({ trackPath }) {
+function Map({ addSelectedTrigger, trackPath }) {
   const [mapStyle, setMapStyle] = useState(defaultMapStyle);
   const [viewport, setViewport] = useState({
     width: 400,
@@ -229,47 +195,73 @@ function Map({ trackPath }) {
     longitude: -122.4376,
     zoom: 8
   });
+  const mapRef = useRef();
 
   //boundsSource = historyMapData.points;
 
   useEffect(() => {
-    if (!trackPath) return null;
+    //if (!trackPath) return null;
     const historyMapData = track({
       trackPath: trackPath
     });
-    const { points, lines } = historyMapData;
-    const mapStyleUpdate = mapStyle
-      .setIn(
-        ["sources", "lines"],
-        fromJS({ type: "geojson", lineMetrics: true, data: lines })
-      )
-      .setIn(["sources", "points"], fromJS({ type: "geojson", data: points }));
-
-    setMapStyle(mapStyleUpdate);
-    const bounds = getBounds(points);
-    const mapObject = document.getElementsByClassName("map")[0];
-
     var zooming = {};
 
-    console.log("bounds", trackPath, bounds, mapObject);
-    if (bounds && mapObject) {
-      zooming = new WebMercatorViewport({
-        width: 300, //mapObject.offsetWidth,
-        height: 300 //mapObject.offsetHeight
-      }).fitBounds(bounds, {
-        padding: 50,
-        offset: [0, 0]
-      });
+    if (trackPath) {
+      const { points, lines } = historyMapData;
+
+      const mapStyleUpdate = mapStyle
+        .setIn(
+          ["sources", "lines"],
+          fromJS({ type: "geojson", lineMetrics: true, data: lines })
+        )
+        .setIn(
+          ["sources", "points"],
+          fromJS({ type: "geojson", data: points })
+        );
+
+      setMapStyle(mapStyleUpdate);
+      const bounds = getBounds(points);
+      const mapObject = document.getElementsByClassName("map")[0];
+
+      if (bounds && mapObject) {
+        zooming = new WebMercatorViewport({
+          width: mapRef.current._width, //mapObject.offsetWidth,
+          height: mapRef.current._height //mapObject.offsetHeight
+        }).fitBounds(bounds, {
+          padding: 50,
+          offset: [0, 0]
+        });
+      }
+
+      const viewportCalc = {
+        ...viewport,
+        ...zooming,
+        transitionDuration: 500
+      };
+
+      setViewport(viewportCalc);
     }
-
-    const viewportCalc = {
-      ...viewport,
-      ...zooming,
-      transitionDuration: 500
-    };
-
-    setViewport(viewportCalc);
   }, [trackPath]);
+
+  const onMapClick = e => {
+    var bbox = [
+      [e.point[0] - 1, e.point[1] - 1],
+      [e.point[0] + 1, e.point[1] + 1]
+    ];
+
+    var features = mapRef.current.queryRenderedFeatures(bbox, {
+      layers: ["pointLayer"]
+    });
+
+    console.log("map clicked", mapRef.current, features);
+
+    if (features.length >= 1) {
+      if (features[0].layer.id === "pointLayer") {
+        console.log(features[0].properties.time);
+        addSelectedTrigger([features[0].properties.time]);
+      }
+    }
+  };
 
   //mapStyle="mapbox://styles/mapbox/streets-v11"
   return (
@@ -278,10 +270,13 @@ function Map({ trackPath }) {
       {...viewport}
       mapboxApiAccessToken={token()}
       mapStyle={mapStyle}
+      ref={mapRef}
       width="100%"
       height="100vh"
+      onClick={onMapClick}
       onViewportChange={viewportInternal => setViewport(viewportInternal)}
     >
+      <Popup />
       <Track />
     </ReactMapGL>
   );
@@ -294,6 +289,7 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = dispatch => ({
+  addSelectedTrigger: data => dispatch(addSelected(data)),
   deleteTrackEntryTrigger: data => dispatch(deleteTrackEntry(data))
 });
 

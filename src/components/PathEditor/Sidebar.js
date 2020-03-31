@@ -4,14 +4,14 @@ import Dropzone from "./Dropzone";
 import SidebarContent from "../SidebarContent";
 import FileSaver, { saveAs } from "file-saver";
 
-import { getTrack } from "../../selectors";
+import { getTrack, getSelectedTracks } from "../../selectors";
 import styles from "./styles.module.scss";
 import { connect } from "react-redux";
 import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave } from "@fortawesome/pro-solid-svg-icons";
 
-function Sidebar({ track }) {
+function Sidebar({ selectedTracks, track }) {
   const save = () => {
     var blob = new Blob([JSON.stringify(track)], {
       type: "text/plain;charset=utf-8"
@@ -56,6 +56,7 @@ function Sidebar({ track }) {
 
 const mapStateToProps = state => {
   return {
+    selectedTracks: getSelectedTracks(state),
     track: getTrack(state)
   };
 };

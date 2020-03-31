@@ -5,6 +5,11 @@
   border-bottom: 1px solid $ui-04;
   display: flex;
   justify-content: space-between;
+  cursor: pointer;
+}
+
+.selectedItem {
+  background: $ui-03;
 }
 
 .title {
