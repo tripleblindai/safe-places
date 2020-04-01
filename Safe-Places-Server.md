@@ -3,6 +3,7 @@
 Safe Places can be hosted by a server which implements five basic endpoints.
 The [Redaction Tool](location_scrubber/index.html) and the [Publisher](publisher/index.html) support being served by such a server.  They can be simply modified by changing the value of `has_backend` within the Javascript, then serving them to a browser.  These webapps will automatically operate with the backend which implements this API.
 
+Anyone who implements this API this is should be aware of [healthcare-authorities.yaml](./healthcare-authorities.yaml).  The output of the safe-paths.json endpoint outputs exactly the format expected by a Safe Places client and can be added to that Healthcare Authority registry.
 
 API Endpoints
 =======
