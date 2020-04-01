@@ -11,6 +11,24 @@ export const getTrackPath = state =>
       })
     : [];
 
+export const getTrackStart = state =>
+  state.reducer.tracks &&
+  Math.min.apply(
+    Math,
+    state.reducer.tracks.concern_points.map(function(o) {
+      return o.time;
+    })
+  );
+
+export const getTrackEnd = state =>
+  state.reducer.tracks &&
+  Math.max.apply(
+    Math,
+    state.reducer.tracks.concern_points.map(function(o) {
+      return o.time;
+    })
+  );
+
 export const countTracks = state => state.infections.length;
 export const countPositions = state => state.positions.length;
 export const countWarnings = state => state.warnings.length;

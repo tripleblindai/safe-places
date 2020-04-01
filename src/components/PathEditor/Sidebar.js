@@ -7,6 +7,7 @@ import FileSaver, { saveAs } from "file-saver";
 import { getTrack, getSelectedTracks } from "../../selectors";
 import styles from "./styles.module.scss";
 import { connect } from "react-redux";
+import DateSlider from "../DateSlider";
 import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -57,6 +58,7 @@ function Sidebar({ addTrackEntryTrigger, track }) {
         </Button>
       </div>
       <div className={styles.toolbar}>
+        <DateSlider />
         <Button
           kind="secondary"
           icon={<FontAwesomeIcon icon={faPlusCircle} />}
