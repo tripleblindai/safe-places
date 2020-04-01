@@ -1,0 +1,25 @@
+@import "../../scss/global";
+
+.dateInput {
+  position: relative;
+  max-width: 200px;
+
+  input[type="date"],
+  input[type="time"] {
+    padding-left: 2rem;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.icon {
+  position: absolute;
+  bottom: 0;
+  height: 39px;
+  width: 35px;
+  color: $interactive-01;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

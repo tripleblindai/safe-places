@@ -4,6 +4,8 @@
 @import "~@wfp/ui/source/globals/scss/_typography";
 
 $interactive-01: #0177ff;
+$hover-primary: darken(#0177ff, 10);
+$hover-secondary: #0177ff;
 $color__green: rgb(67, 194, 41);
 $input_border: 1px solid #dfe3e6;
 $support-02: $color__green;

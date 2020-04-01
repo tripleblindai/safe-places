@@ -5,11 +5,9 @@ import arrayMove from "array-move";
 const initialState = [];
 
 export default function todos(state = initialState, action) {
-  console.log("dispatch called", action);
   switch (action.type) {
     case ADD_SELECTED_ENTRY:
       return action.data;
-
     default:
       return state;
   }

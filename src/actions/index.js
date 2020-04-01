@@ -19,8 +19,23 @@ export const addTrack = data => {
 };
 
 export const addSelected = data => {
+  console.log("addSelected");
   return {
     type: types.ADD_SELECTED_ENTRY,
+    data
+  };
+};
+
+export const addTrackEntry = data => {
+  return {
+    type: types.ADD_TRACK_ENTRY,
+    data
+  };
+};
+
+export const editTrackEntry = data => {
+  return {
+    type: types.EDIT_TRACK_ENTRY,
     data
   };
 };

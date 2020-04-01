@@ -6,7 +6,9 @@ import {
   COMPLETE_WARNING,
   COMPLETE_ALL_WARNINGS,
   CLEAR_ALL,
-  CLEAR_COMPLETED
+  CLEAR_COMPLETED,
+  ADD_SELECTED_ENTRY,
+  ADD_TRACK_ENTRY
 } from "../constants/ActionTypes";
 
 import arrayMove from "array-move";
@@ -34,6 +36,11 @@ export default function todos(state = initialState, action) {
         findIndex + action.difference
       );
       return { ...state, concern_points: points };
+
+    case ADD_TRACK_ENTRY:
+      let pointsAdd = state.concern_points;
+      pointsAdd.push({ latitude: 0, longitude: 0, time: 2132321 });
+      return { ...state, concern_points: pointsAdd };
 
     /* case EDIT_WARNING:
       return state.map(todo =>

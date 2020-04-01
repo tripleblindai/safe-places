@@ -5,7 +5,11 @@ export const getAllWarnings = state => state.warnings;
 export const getDetail = state => state.detail;
 export const getTrack = state => state.reducer.tracks;
 export const getTrackPath = state =>
-  state.reducer.tracks ? state.reducer.tracks.concern_points : [];
+  state.reducer.tracks
+    ? state.reducer.tracks.concern_points.sort(function(a, b) {
+        return a.time - b.time;
+      })
+    : [];
 
 export const countTracks = state => state.infections.length;
 export const countPositions = state => state.positions.length;

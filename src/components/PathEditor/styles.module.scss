@@ -1,6 +1,8 @@
 @import "../../scss/global";
-.sidebar {
-  height: 100%;
+
+.sidebarContent {
+  flex: 1;
+  overflow: auto;
 }
 .header {
   display: flex;
@@ -26,4 +28,14 @@
 
 .title {
   flex: 1;
+}
+
+.toolbar {
+  padding: $spacing-md;
+  background: $ui-02;
+  border-bottom: 1px solid $ui-04;
+}
+
+.newForm {
+  padding: $spacing-md;
 }

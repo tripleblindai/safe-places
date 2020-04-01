@@ -1,0 +1,27 @@
+@import "../../scss/global";
+
+.form {
+  [class="wfp--form-item"] {
+    margin-right: $spacing-md;
+    margin-bottom: $spacing-md;
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+  border-bottom: 1px solid $ui-03;
+}
+.position {
+  display: flex;
+}
+
+.dateWrapper {
+  display: flex;
+}
+
+.streetWrapper {
+  display: flex;
+}
+
+.townWrapper {
+  display: flex;
+}
