@@ -2,6 +2,10 @@
 
 A toolkit for public health, built on top of data shared by users of [Private Kit](https://github.com/tripleblindmarket/private-kit)
 
+## Server
+
+A server implementation can be easily built to host these tools.  See how in the [Server API documentation](Safe-Places-Server.md).
+
 ## Tools
 
 ### [Location Viewer/Scrubber](https://raw.githack.com/tripleblindmarket/safe-places/master/location-scrubber/index.html)
