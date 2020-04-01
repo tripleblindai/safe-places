@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 
 <head>
@@ -10,10 +9,12 @@
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
     <style>
         /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
+           element that contains the map. */
         #map {
+            display: none;
             height: 100%;
         }
 
@@ -25,7 +26,77 @@
             padding: 0;
         }
 
+        /* Login dialog */
+        #login-panel,
+        #saving-panel {
+            display: none;
+            position: relative;
+        }
+
+        #loginQuestion {
+            font-size: x-large;
+            margin: 0;
+            margin-top: 20px;
+        }
+
+        #validateTips {
+            color: darkred;
+            padding-left: 20px;
+        }
+
+        #logo {
+            padding-top: 10;
+            height: 40;
+            cursor: pointer;
+        }
+
+        #logo_name {
+            height: 35;
+            cursor: pointer;
+        }
+
+        /* Logo next to the Save button */
+        #btn_logo {
+            height: 20px;
+        }
+
+        #submit,
+        #login {
+            background-color: darkblue;
+            float: right;
+            right: 0;
+            font-size: large;
+            font-weight: 700;
+            border-radius: 10px;
+        }
+
+        #submit:hover,
+        #login:hover {
+            background-color: blue;
+        }
+
+        #login-panel label {
+            font-size: large;
+            font-weight: 700;
+            color: darkblue;
+        }
+
+        input[type=text],
+        input[type=password],
+        select {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            font-size: large;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* control panel */
         #floating-panel {
+            display: none;
             position: absolute;
             top: 10px;
             left: 1%;
@@ -39,30 +110,71 @@
             padding-left: 10px;
         }
 
+        h1 {
+            font-size: xx-large;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            margin: 0;
+            font-family: sans-serif;
+        }
+
         h2 {
             padding: 10px;
             margin: 0;
         }
 
+        /* Small logo in the lower-left corner of the map */
+        #map_logo,
+        #map_logo_name {
+            display: none;
+            position: absolute;
+            cursor: pointer;
+        }
+
+        #map_logo {
+            padding-top: 10;
+            height: 20;
+            left: 100;
+        }
+
+        #map_logo_name {
+            height: 15;
+            left: 125;
+        }
+
+        #tagline {
+            color: darkblue;
+            font-family: sans-serif;
+            position: relative;
+            top: 12;
+            left: 50;
+        }
+
+        /* Control panel */
         .button {
-            background-color: #4CAF50;
-            /* Green */
+            background-color: forestgreen;
             border: none;
             color: white;
-            padding: 20px 40px;
+            padding: 10px 20px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
-            font-size: 16px;
+            font-size: 24px;
         }
 
         .disabled {
             background-color: #cccccc;
             color: white;
+            /* grayscale images, etc */
+            -webkit-filter: grayscale(100%);
+            -moz-filter: grayscale(100%);
+            -o-filter: grayscale(100%);
+            -ms-filter: grayscale(100%);
+            filter: grayscale(100%);
         }
 
         .enabled {
-            background-color: #4CAF50;
+            background-color: forestgreen;
             color: white;
         }
 
@@ -72,6 +184,10 @@
             color: #ccc;
             padding: 0;
             margin-top: 20px;
+        }
+
+        .progress {
+            font-size: x-large;
         }
 
         /* Style buttons */
@@ -286,17 +402,146 @@
         label:hover:before {
             border: 2px solid #4778d9 !important;
         }
+
+        #logout {
+            position: absolute;
+            display: none;
+            top: 9;
+            right: 10;
+            z-index: 9;
+        }
+
+        /***************************************************/
+        /* Dialog boxes */
+
+        #dialog-form {
+            display: none;
+        }
+
+        .modal-header {
+            padding: 2px 16px;
+            background-color: darkblue;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            /* Hidden by default */
+            position: fixed;
+            /* Stay in place */
+            z-index: 99;
+            /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            /* Full width */
+            height: 100%;
+            /* Full height */
+            overflow: auto;
+            /* Enable scroll if needed */
+            background-color: rgb(0, 0, 0);
+            /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4);
+            /* Black w/ opacity */
+        }
+
+        /* Modal Content/Box */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            /* Could be more or less, depending on screen size */
+        }
     </style>
 </head>
 
 <body>
+    <div id="get-map-api-panel" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1>Safe Places</h1>
+            </div>
+
+            <p id="loginQuestion">Enter a Google Maps Javascript API key.</p>
+            <p>Either <a href="https://developers.google.com/maps/documentation/javascript/get-api-key">get your
+                    own key</a>
+                or request one from an administrator.</p>
+
+            <form>
+                <label for="api-key">Map API Key:</label>
+                <input type="text" name="api-key" id="api-key" placeholder="map_api_key"
+                    class="text ui-widget-content ui-corner-all">
+                <p />
+
+                <input class="button" type="button" id="submit" value="Submit" onclick="enterAPIKey();" />
+                &nbsp;
+            </form>
+        </div>
+    </div>
+
+    <div id="login-panel" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1>Safe Places</h1>
+            </div>
+
+            <p id="loginQuestion">Enter your credentials.</p>
+            <p id="validateTips">&nbsp;</p>
+
+            <form>
+                <label for="Username">Username:</label>
+                <input type="text" name="username" id="username" placeholder="name"
+                    class="text ui-widget-content ui-corner-all">
+                <p />
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" placeholder="password"
+                    class="text ui-widget-content ui-corner-all">
+
+
+                <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                <p />
+
+                <span id="tagline">privacy by</span><br />
+                <img id="logo" onclick="onLogoClick()" src="" />
+                <img id="logo_name" onclick="onLogoClick()" src="" />
+                <input class="button" type="button" id="login" value="Login" onclick="doLogin()" />
+            </form>
+        </div>
+    </div>
+
+    <div id="saving-panel" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Saving</h2>
+            </div>
+
+            <p class="progress">Connecting...</p>
+        </div>
+    </div>
+
+    <button class="btn" onclick="doLogout()" id="logout">
+        <i class="fas fa-sign-out-alt"></i> Logout</button>
+
     <div id="floating-panel">
         <h2>Safe Places - Redaction Tool</h2>
 
         <input id="privatekitJSON" style="display:none;" type="file" accept=".json,.null" onchange="loadPath()" />
 
         <input class="button" type="button" id="loadFileXml" value="Load" onclick="$('#privatekitJSON').click();" />
-        <input id="save" class="button disabled" disabled="disabled" onclick="saveText();" type=button value="Save" />
+        <button id="save" class="button disabled" disabled="disabled" onclick="saveText();">
+            <img id="btn_logo" src="" />
+            Save</button>
+
 
         <div style="display: none" id="stats">Visible: <span id="visible">0</span> Hidden: <span id="hidden">0</span>
             Deleted: <span id="deleted">0</span> Total: <span id="total">0</span></div>
@@ -309,6 +554,7 @@
                 <i class="fa fa-object-group"></i> Select Area</button>
             <button class="btn" onclick="selectNone();" id="select-none">
                 <i class="fa fa-ban"></i> Select None</button>&nbsp;
+
             <p />
             <button class="btn btn_delete disabled" onclick="deleteAll()" id="delete-all-btn">
                 <i class="fa fa-trash-alt"></i> Delete All</button>
@@ -361,22 +607,168 @@
         </div>
     </div>
     <div id="map"></div>
+    <img id="map_logo" onclick="onLogoClick()" src="" />
+    <img id="map_logo_name" onclick="onLogoClick()" src="" />
+
     <script>
-        function isDefined(parameter) {
-            return !(typeof (parameter) === "undefined");
+        ///////////////////////////////////////
+        // logging support
+
+        function HHMMSSmmm() {
+            var now = new Date();
+            var ms = "000" + now.getMilliseconds();
+            return now.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1") + "." + ms.substr(ms.length - 3);
         }
 
         function isInitalized(parameter) {
             return isDefined(parameter) && (parameter != null);
         }
 
+        function isDefined(parameter) {
+            return !(typeof (parameter) === "undefined");
+        }
+
+        function LOG(str) {
+            if (!(typeof str === 'string' || str instanceof String))
+                str = JSON.stringify(str);
+
+            console.log(HHMMSSmmm() + " - " + str + "\n");
+        }
+
+        // AJAX helpers
+        //
+        // Adapted from:  http://www.html5rocks.com/en/tutorials/es6/promises/#toc-javascript-promises
+        // Added the optional respType parameter
+        //
+        // Use:
+        //   get("http://...").then(function(result){
+        //        ... do whatever with 'result' ...
+        //       },
+        //       function(err){
+        //       });
+        //
+
+        function get(url, respType, auth) {
+            return doXHR("GET", url, respType, auth, null);
+        }
+
+        // Ex: post("createAcct.php", "fname=Henry&lname=Ford");
+        //     post("compactDbase.php");
+        function post(url, data, creds) {
+            return doXHR("POST", url, data, null, creds);
+        }
+
+        function doXHR(method, url, param, auth, creds) {
+            LOG("XHR " + method + ": " + url, "XHR");
+
+            // Return a new promise.
+            return new Promise(function (resolve, reject) {
+                // Do the usual XHR stuff
+                var req = new XMLHttpRequest();
+
+                if (method === "GET" && isDefined(param)) {
+                    var respType = param;
+                    if (respType === "blob" || respType === "arrayBuffer" || respType === "document" ||
+                        respType === "json" || respType === "text")
+                        req.responseType = respType;
+                }
+                req.open(method, url);
+
+                req.onload = function () {
+                    // This is called even on 404 etc
+                    // so check the status
+                    if (req.status === 200) {
+                        // Resolve the promise with the response text
+                        LOG("XHR " + method + " success", "XHR");
+                        resolve(req.response);
+                    } else {
+                        LOG("XHR " + method + " failed:" + req.status, "XHR");
+                        // Otherwise reject with the status text
+                        // which will hopefully be a meaningful error
+                        reject(Error(req.statusText + ": " + url));
+                    }
+                };
+
+                // Handle network errors
+                req.onerror = function () {
+                    LOG("XHR network error", "XHR");
+                    reject(Error("Network Error"));
+                };
+
+                // Make the request
+                if (method === "POST" && isDefined(param)) {
+                    var data = param;
+                    if (isDefined(creds)) {
+                        req.setRequestHeader("Authorization", creds);
+                    }
+                    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                    req.send(data);
+                } else {
+                    req.setRequestHeader("Authorization", "Basic " + auth);
+                    req.send();
+                }
+            });
+        }
+
+        ///////////////////////////////////////
+        // Customization!
+
+        var has_backend = false; // When true use standard back API calls
+        var logo = ""; // Enter a logo for backend
+        var logo_text = ""; // Enter name or second graphic
+        var logo_destination_url = "";
+
+        if (logo) {
+            $("#logo").attr("src", logo);
+            $("#btn_logo").attr("src", logo);
+            $("#map_logo").attr("src", logo);
+        } else {
+            $("#logo").hide();
+            $("#btn_logo").hide();
+            $("#map_logo").hide();
+        }
+
+        if (logo_text) {
+            $("#logo_name").attr("src", logo_text);
+            $("#map_logo_name").attr("src", logo_text);
+        } else {
+            $("#logo_name").hide();
+            $("#map_logo_name").hide();
+        }
+
+        $(document).ready(function () {
+            if (has_backend) {
+                $('#password').keypress(function (e) {
+                    if (e.keyCode == 13)
+                        $('#login').click();
+                });
+            } else {
+                $('#api-key').keypress(function (e) {
+                    if (e.keyCode == 13)
+                        $('#submit').click();
+                });
+            }
+        });
+
+        ///////////////////////////////////////
+        // Login
+
         var MAP_API_KEY = localStorage.getItem("MAP_API_KEY");
 
-        if (!isInitalized(MAP_API_KEY) || MAP_API_KEY == "" || MAP_API_KEY == null || MAP_API_KEY == "null" ||
-            MAP_API_KEY ==
-            "MAP_API_KEY")
-            enterAPIKey();
-        else {
+        if (!isInitalized(MAP_API_KEY) || MAP_API_KEY == "" || MAP_API_KEY == null ||
+            MAP_API_KEY == "null" || MAP_API_KEY == "MAP_API_KEY") {
+            // First run, do the "startup" sequence
+            startupSequence()
+        } else {
+            // Returning, already finished with the startup
+            $("#floating-panel").show();
+            $("#map").show();
+            $("#map_logo").show();
+            $("#map_logo_name").show();
+            if (has_backend)
+                $("#logout").show();
+
+            // Inject the Google Maps Javascript API key
             var script = document.createElement("script");
             script.async = true;
             script.defer = true;
@@ -384,25 +776,53 @@
                 "https://maps.googleapis.com/maps/api/js?key=" + MAP_API_KEY +
                 "&libraries=drawing,geometry&callback=initMap";
             document.head.appendChild(script);
+        }
 
-
-            function DOMEval(code, doc) {
-                doc = doc || document;
-
-                var script = doc.createElement("script");
-
-                script.text = code;
-                doc.head.appendChild(script).parentNode.removeChild(script);
+        function startupSequence() {
+            // Setup the web UI for whatever login is necessary
+            if (has_backend) {
+                $("#login-panel").show();
+            } else {
+                $("#get-map-api-panel").show();
             }
         }
 
         function enterAPIKey() {
-            MAP_API_KEY = prompt(
-                "Enter a Google Maps JavaScript API Key.  You can obtain this from you support team.:",
-                "MAP_API_KEY");
-            localStorage.setItem('MAP_API_KEY', MAP_API_KEY);
+            localStorage.setItem("MAP_API_KEY", $("#api-key").val());
             location.reload();
         }
+
+        function doLogin() {
+            var username = $("#username").val();
+            var password = $("#password").val();
+
+            var res = post("/login/",
+                '{ "username": "' + username + '", "password": "' + password + '" }').then(
+                function (result) {
+                    var data = JSON.parse(result);
+
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('MAP_API_KEY', data.maps_api_key);
+                    document.cookie = "token=" + data.token;
+                    location.reload();
+                },
+                function (err) {
+                    $("#validateTips").text(err);
+                });
+        }
+
+        function doLogout() {
+            localStorage.setItem('token', null);
+            localStorage.setItem('MAP_API_KEY', null);
+            document.cookie = "token= ; expires = Thu, 01 Jan 1970 00:00:00 GMT"
+            location.reload();
+        }
+
+        function onLogoClick() {
+            window.open(logo_destination_url);
+        }
+
+
 
         var exposurePoints;
         var exposurePaths;
@@ -432,7 +852,7 @@
             DEFAULT: 0, //ideally would have liked to use google.maps.Marker.MAX_ZINDEX, but it library isn't initalized when this tries to load
             SELECTED: 4, //selected marker is always on top
             GROUP: 3, //followed by others in its selected group
-            TRANSIENT: 2, //transients are higher priority than recurring (???) 
+            TRANSIENT: 2, //transients are higher priority than recurring (???)
             RECURRING: 1, //
             TRAVEL: 0, //travel should always be on the bottom
         }
@@ -447,7 +867,7 @@
         var selectedGroupID = null;
         var msVizStart; // all times are in milliseconds;
         var msVizEnd;
-        var fileRegExp = new RegExp(/\.json$/);
+        var fileRegExp = new RegExp(/\.(json|null)$/);
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -501,7 +921,7 @@
 
         function selectArea() {
             if (document.getElementById("select-area").classList.contains("pressed")) {
-                // Already in select area mode, untoggle button and exit the 
+                // Already in select area mode, untoggle button and exit the
                 document.getElementById("select-area").classList.remove("pressed");
                 drawingManager.setDrawingMode(null);
                 return;
@@ -540,7 +960,8 @@
                 if (isInitalized(exposurePoints)) {
                     let areaBounds = selectedArea.getBounds();
                     exposurePoints.forEach(function (element, index) {
-                        if (isInitalized(element.getMap()) && areaBounds.contains(element.getPosition())) {
+                        if (isInitalized(element.getMap()) && areaBounds.contains(element
+                                .getPosition())) {
                             deleteExposure(index, element);
                         }
                     });
@@ -697,8 +1118,10 @@
                             points.push(marker);
 
                             //create a circle with which to measure a 100' radius from the center of our current bounds
-                            if (!currentGroupBounds.isEmpty() && (google.maps.geometry.spherical
-                                    .computeDistanceBetween(elementLatLng, currentGroupBounds
+                            if (!currentGroupBounds.isEmpty() && (google.maps.geometry
+                                    .spherical
+                                    .computeDistanceBetween(elementLatLng,
+                                        currentGroupBounds
                                         .getCenter()) > 30.48)) {
                                 //save off the previous group for later evaluation as recurring or transient
                                 exposureGroups[currentGroupId].bounds = currentGroupBounds;
@@ -713,7 +1136,8 @@
                             currentGroupBounds.extend(elementLatLng);
 
                             //create a new object to hold the groups if we don't have one already
-                            if (exposureGroups[currentGroupId] === undefined || exposureGroups[
+                            if (exposureGroups[currentGroupId] === undefined ||
+                                exposureGroups[
                                     currentGroupId] === null) {
                                 exposureGroups[currentGroupId] = {
                                     markers: [],
@@ -729,7 +1153,8 @@
                             element.groupType = GROUP_TYPES.UNDEF;
 
                             //we add the event listener after we determine what group the marker is in
-                            google.maps.event.addListener(marker, 'click', (function (thisMarker,
+                            google.maps.event.addListener(marker, 'click', (function (
+                                thisMarker,
                                 groupId) {
                                 return function (event) {
                                     selectNone();
@@ -741,37 +1166,51 @@
                                     // when we click a marker set all the markers in that group to purple
                                     exposureGroups[groupId].markers.forEach(
                                         function (element, index) {
-                                            element.setIcon(MARKER_ICONS.GROUP);
-                                            element.setZIndex(MARKER_ZINDEX
+                                            element.setIcon(MARKER_ICONS
+                                                .GROUP);
+                                            element.setZIndex(
+                                                MARKER_ZINDEX
                                                 .GROUP);
                                         });
                                     //then set the clicked marker to green
-                                    thisMarker.setIcon(MARKER_ICONS.SELECTED);
-                                    thisMarker.setZIndex(MARKER_ZINDEX.SELECTED);
+                                    thisMarker.setIcon(MARKER_ICONS
+                                        .SELECTED);
+                                    thisMarker.setZIndex(MARKER_ZINDEX
+                                        .SELECTED);
 
-                                    let uncolorColsure = (function (groupId) {
+                                    let uncolorColsure = (function (
+                                        groupId) {
                                         return function (event) {
-                                            exposureGroups[groupId]
-                                                .markers.forEach(
-                                                    function (element,
+                                            exposureGroups[
+                                                    groupId]
+                                                .markers
+                                                .forEach(
+                                                    function (
+                                                        element,
                                                         index) {
-                                                        element.setIcon(
-                                                            getMarkerIcon(
-                                                                groupType
-                                                            ));
+                                                        element
+                                                            .setIcon(
+                                                                getMarkerIcon(
+                                                                    groupType
+                                                                )
+                                                            );
                                                         element
                                                             .setZIndex(
                                                                 getMarkerZIndex(
                                                                     groupType
-                                                                ));
+                                                                )
+                                                            );
                                                     });
 
                                             if (groupId ==
-                                                selectedGroupID) {
-                                                selectedGroupID = null;
+                                                selectedGroupID
+                                            ) {
+                                                selectedGroupID
+                                                    = null;
                                             }
 
-                                            enableDelete(false, false);
+                                            enableDelete(false,
+                                                false);
                                         };
                                     })(groupId);
 
@@ -780,7 +1219,8 @@
                                     global_uncolorClosure = uncolorColsure;
 
                                     enableDelete(
-                                        exposureGroups[groupId].markers.length >
+                                        exposureGroups[groupId].markers
+                                        .length >
                                         1,
                                         true);
                                 }
@@ -821,11 +1261,13 @@
                             //add the time from the end of the "from group" to the end of the "to group"
                             let fromGroupEndTime = 0;
                             let currentGroupStartTime = toGroup.elements[0].time;
-                            let currentGroupEndTime = toGroup.elements[toGroup.elements.length - 1]
+                            let currentGroupEndTime = toGroup.elements[toGroup.elements.length -
+                                    1]
                                 .time;
 
                             if (isInitalized(fromGroup)) {
-                                fromGroupEndTime = fromGroup.elements[fromGroup.elements.length - 1]
+                                fromGroupEndTime = fromGroup.elements[fromGroup.elements
+                                        .length - 1]
                                     .time;
                                 duration += (currentGroupStartTime - fromGroupEndTime);
                             }
@@ -834,19 +1276,22 @@
 
                             //add the distance from the end of the "from group" to the start of the "to group"
                             if (isInitalized(fromGroup)) {
-                                let fromGroupEndPosition = fromGroup.markers[fromGroup.markers.length -
+                                let fromGroupEndPosition = fromGroup.markers[fromGroup.markers
+                                    .length -
                                     1].getPosition();
                                 let toGroupStartPosition = toGroup.markers[0].getPosition();
 
-                                distance += google.maps.geometry.spherical.computeDistanceBetween(
-                                    fromGroupEndPosition, toGroupStartPosition);
+                                distance += google.maps.geometry.spherical
+                                    .computeDistanceBetween(
+                                        fromGroupEndPosition, toGroupStartPosition);
                             }
 
                             //add the distance traveled within the "to group"
                             toGroup.markers.forEach(function (element, index) {
                                 if (index > 0) {
                                     distance += google.maps.geometry.spherical
-                                        .computeDistanceBetween(toGroup.markers[index - 1]
+                                        .computeDistanceBetween(toGroup.markers[index -
+                                                1]
                                             .getPosition(), element.getPosition());
                                 }
                             });
@@ -857,23 +1302,27 @@
 
                         let updateTravelGroupMarkers = function (travelGroupMarkers, travelGroupId,
                             travelGroupDurationMilliseconds, travelGroupDistanceMeters) {
-                            let travelGroupDurationHours = travelGroupDurationMilliseconds / (1000 *
-                                60 * 60); //convert to hours
+                            let travelGroupDurationHours = travelGroupDurationMilliseconds / (
+                                1000 * 60 * 60); //convert to hours
                             let travelGroupDistanceKilometers = travelGroupDistanceMeters / 1000;
-                            let travelGroupSpeed = 0; //mph
+                            let travelGroupSpeedKMPH = 0;
 
                             if (travelGroupDurationHours > 0) {
-                                travelGroupSpeed = travelGroupDistanceKilometers /
+                                travelGroupSpeedKMPH = travelGroupDistanceKilometers /
                                     travelGroupDurationHours;
                             }
 
                             //round to 2 decimal places...soooo ugly in javascript
-                            travelGroupSpeed = Math.round((travelGroupSpeed + Number.EPSILON) * 100) /
-                                100;
+                            travelGroupSpeedMPH = Math.round(((travelGroupSpeedKMPH / 1.609) +
+                                Number.EPSILON) * 100) / 100;
+                            travelGroupSpeedKMPH = Math.round((travelGroupSpeedKMPH +
+                                Number.EPSILON) * 100) / 100;
 
                             travelGroupMarkers.forEach(function (element, index) {
-                                element.setTitle(element.getTitle() + "\nTravel Group " +
-                                    travelGroupId + " " + travelGroupSpeed + "kph");
+                                element.setTitle(element.getTitle() +
+                                    "\nTravel Group " + travelGroupId + "\n" +
+                                    travelGroupSpeedMPH + " mph" + " | " +
+                                    travelGroupSpeedKMPH + " km/h");
                             });
                         };
 
@@ -883,13 +1332,15 @@
                             let foundIntersection = false;
                             for (var i = groupCount; i < exposureGroups.length; i++) {
                                 //We may need to put some time boundaries on this because travel groups could intersect if you travel a similar route periodically.
-                                if (exposureGroups[key].bounds.intersects(exposureGroups[exposureGroupKeys[
-                                        i]].bounds)) {
+                                if (exposureGroups[key].bounds.intersects(exposureGroups[
+                                        exposureGroupKeys[
+                                            i]].bounds)) {
                                     foundInteresection = true;
                                     exposureGroups[key].elements.forEach(function (element, index) {
                                         element.groupType = GROUP_TYPES.RECURRING;
                                     });
-                                    exposureGroups[exposureGroupKeys[i]].elements.forEach(function (element,
+                                    exposureGroups[exposureGroupKeys[i]].elements.forEach(function (
+                                        element,
                                         index) {
                                         element.groupType = GROUP_TYPES.RECURRING;
                                     });
@@ -906,7 +1357,8 @@
                                     //  If so, we set keep the current travelGroupId and use that value.
                                     //  If not, we increment the travelGroupId and take that value instead.
                                     //  but we only look back if we are not the first group
-                                    if (groupCount == 1 || exposureGroups[exposureGroupKeys[groupCount - 2]]
+                                    if (groupCount == 1 || exposureGroups[exposureGroupKeys[
+                                            groupCount - 2]]
                                         .elements[0]
                                         .groupType != GROUP_TYPES.TRAVEL) {
                                         if (groupCount == 1 || !isInitalized(travelGroupId)) {
@@ -921,7 +1373,8 @@
                                     });
 
                                     //update current travel group's duration and distance
-                                    addTravelGroupTimeAndDistance(lastExposureGroup, exposureGroups[key]);
+                                    addTravelGroupTimeAndDistance(lastExposureGroup, exposureGroups[
+                                        key]);
 
                                     //add all the travel group markers to the list to be updated
                                     exposureGroups[key].markers.forEach(function (element, index) {
@@ -971,7 +1424,8 @@
                         }
                         travelGroupMarkers = null; //free memory
 
-                        initDateSlider(exposureJSON[0].time, exposureJSON[exposureJSON.length - 1].time);
+                        initDateSlider(exposureJSON[0].time, exposureJSON[exposureJSON.length - 1]
+                            .time);
                         updateStats();
                     };
                 })(map, exposurePoints, exposurePaths);
@@ -1034,10 +1488,12 @@
                                     windowRange.value)) {
                                 let slidingHandle = ui.handleIndex;
                                 let followingHandle = Math.abs(slidingHandle - 1);
-                                if (ui.values[1] - ui.values[0] != windowRange.value) {
+                                if (ui.values[1] - ui.values[0] != windowRange
+                                    .value) {
                                     let valueDelta = 0
                                     if (followingHandle == 1) {
-                                        valueDelta = windowRange.value - (ui.values[1] - ui
+                                        valueDelta = windowRange.value - (ui.values[
+                                                1] - ui
                                             .values[0]);
                                     } else if (followingHandle == 0) {
                                         valueDelta = (ui.values[1] - ui.values[0]) -
@@ -1046,12 +1502,16 @@
 
                                     let followingHandleTargetValue = (ui.values[
                                         followingHandle] + valueDelta);
-                                    if ((followingHandleTargetValue >= $("#slider-range")
+                                    if ((followingHandleTargetValue >= $(
+                                                "#slider-range")
                                             .slider("option", "min")) && (
-                                            followingHandleTargetValue <= $("#slider-range")
+                                            followingHandleTargetValue <= $(
+                                                "#slider-range")
                                             .slider("option", "max"))) {
-                                        $("#slider-range").slider('values', followingHandle,
-                                            ui.values[followingHandle] + valueDelta);
+                                        $("#slider-range").slider('values',
+                                            followingHandle,
+                                            ui.values[followingHandle] +
+                                            valueDelta);
                                         ui.values[followingHandle] += valueDelta;
                                     } else {
                                         eventSuccess = false;
@@ -1146,8 +1606,9 @@
                 } else {
                     group.markers.forEach(function (element, index) {
                         //we need to make sure that we only show thing that have not been redacted...the marker indicies and the element indicies should be aligned
-                        if (isInitalized(group.elements[index].latitude) && isInitalized(group.elements[
-                                index].longitude)) {
+                        if (isInitalized(group.elements[index].latitude) && isInitalized(group
+                                .elements[
+                                    index].longitude)) {
                             //addMarker(element);
                             //replaceLinesToPoint(exposurePoints.indexOf(element));
                             applyTimeWindow(group.elements[index]);
@@ -1184,16 +1645,19 @@
                     } else {
                         let groupTimeBoundsStartTime = group.elements[0].time;
                         let groupTimeBoundsEndTime = group.elements[group.elements.length - 1].time;
-                        let groupTimeBounds = (groupTimeBoundsEndTime - groupTimeBoundsStartTime) / incrementFactor;
+                        let groupTimeBounds = (groupTimeBoundsEndTime - groupTimeBoundsStartTime) /
+                            incrementFactor;
 
                         if (groupTimeBounds < 60) {
                             if (groupTimeBounds < 30) {
                                 if (groupTimeBounds < 15) {
-                                    hideGroupMarkers($("#hide-15").prop("checked") || $("#hide-30").prop("checked") ||
+                                    hideGroupMarkers($("#hide-15").prop("checked") || $("#hide-30").prop(
+                                            "checked") ||
                                         $(
                                             "#hide-60").prop("checked"), group);
                                 } else {
-                                    hideGroupMarkers($("#hide-30").prop("checked") || $("#hide-60").prop("checked"),
+                                    hideGroupMarkers($("#hide-30").prop("checked") || $("#hide-60").prop(
+                                            "checked"),
                                         group);
                                 }
                             } else {
@@ -1253,6 +1717,9 @@
                             mapBounds.extend(element.getPosition());
                         }
                     });
+                } else {
+                    map.setCenter(new google.maps.LatLng(39.0609926, -94.5734936, 19.75));
+                    return;
                 }
             }
             map.setCenter(mapBounds.getCenter());
@@ -1421,18 +1888,53 @@
                 }
             }
 
-            let text = JSON.stringify(out);
+            // Get loaded filename...
             let file = $("#privatekitJSON").get(0).files[0];
             let filename = file.name.replace(fileRegExp, "-REDACTED.json");
 
-            var a = document.createElement('a');
-            a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-            a.setAttribute('download', filename);
-            a.click();
+            if (has_backend) {
+                // POST redacted data to the backend
 
-            // TODO: Use HTML5 saveAs()
-            //var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-            //saveAs(blob, filename);
+                $("#saving-panel").show();
+
+                let payload = {
+                    "identifier": filename,
+                    "trail": out
+                };
+
+                var req = $.ajax({
+                    url: "/redacted_trail/",
+                    type: 'POST',
+                    data: JSON.stringify(payload),
+                    // Fetch the stored token from localStorage and set in the header
+                    headers: {
+                        "Authorization": localStorage.getItem('token')
+                    }
+                });
+
+                req.done(function (msg) {
+                    $("#progress").text("Result:" + msg)
+                    setTimeout(function () {
+                        $("#saving-panel").hide();
+                    }, 1000);
+                });
+
+                req.fail(function (jqXHR, textStatus) {
+                    $("#progress").text("Error: " + textStatus);
+                });
+            } else {
+                // Just save as a simple JSON file
+
+                let output = JSON.stringify(out);
+                var a = document.createElement('a');
+                a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(output));
+                a.setAttribute('download', filename);
+                a.click();
+
+                // TODO: Use HTML5 saveAs()
+                //var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+                //saveAs(blob, filename);
+            }
         }
     </script>
 </body>
