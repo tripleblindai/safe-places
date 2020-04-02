@@ -1,0 +1,9 @@
+{ "authority_name":  "Steve's Fake Testing Organization",
+  "publish_date_utc": "1584924583",
+  "info_website": "https://www.who.int/emergencies/diseases/novel-coronavirus-2019",
+  "concern_points":
+   [
+     { "time": 123, "latitude": 12.34, "longitude": 12.34},
+     { "time": 456, "latitude": 12.34, "longitude": 12.34}
+   ]
+}

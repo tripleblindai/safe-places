@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 
 <head>
@@ -10,10 +9,12 @@
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
     <style>
         /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
+           element that contains the map. */
         #map {
+            display: none;
             height: 100%;
         }
 
@@ -25,15 +26,97 @@
             padding: 0;
         }
 
-        .example {
-            padding-left: 30px;
-            margin-top: 0;
-            padding-top: 0;
-            font-size: 0.75em;
-            color: cadetblue;
+        /* Login dialog */
+        #login-panel,
+        #saving-panel {
+            display: none;
+            position: relative;
         }
 
+        #loginQuestion {
+            font-size: x-large;
+            margin: 0;
+            margin-top: 20px;
+        }
+
+        #validateTips {
+            color: darkred;
+            padding-left: 20px;
+        }
+
+        #logo {
+            padding-top: 10;
+            height: 40;
+            cursor: pointer;
+        }
+
+        #logo_name {
+            height: 35;
+            cursor: pointer;
+        }
+
+        #logo {
+            padding-top: 10;
+            height: 40;
+        }
+
+        #logo_name {
+            height: 35;
+        }
+
+        #logo {
+            padding-top: 10;
+            height: 40;
+            cursor: pointer;
+        }
+
+        #logo_name {
+            height: 35;
+            cursor: pointer;
+        }
+
+        /* Logo next to the Save button */
+        #btn_logo {
+            height: 20px;
+        }
+
+        #submit,
+        #login {
+            background-color: darkblue;
+            float: right;
+            right: 0;
+            font-size: large;
+            font-weight: 700;
+            border-radius: 10px;
+        }
+
+        #submit:hover,
+        #login:hover {
+            background-color: blue;
+        }
+
+        #login-panel label {
+            font-size: large;
+            font-weight: 700;
+            color: darkblue;
+        }
+
+        input[type=text],
+        input[type=password],
+        select {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            font-size: large;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* control panel */
         #floating-panel {
+            display: none;
             position: absolute;
             top: 10px;
             left: 1%;
@@ -47,33 +130,59 @@
             padding-left: 10px;
         }
 
+        h1 {
+            font-size: xx-large;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            margin: 0;
+            font-family: sans-serif;
+        }
+
         h2 {
             padding: 10px;
             margin: 0;
         }
 
+        /* Small logo in the lower-left corner of the map */
+        #map_logo,
+        #map_logo_name {
+            display: none;
+            position: absolute;
+            cursor: pointer;
+        }
+
+        #map_logo {
+            padding-top: 10;
+            height: 20;
+            left: 100;
+        }
+
+        #map_logo_name {
+            height: 15;
+            left: 125;
+        }
+
+        #tagline {
+            color: darkblue;
+            font-family: sans-serif;
+            position: relative;
+            top: 12;
+            left: 50;
+        }
+
+        /* Control panel */
         .button {
-            background-color: #4CAF50;
-            /* Green */
+            background-color: forestgreen;
             border: none;
             color: white;
-            padding: 20px 40px;
+            padding: 10px 20px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
-            font-size: 16px;
-            margin: 10px;
-        }
-
-        input[type=text] {
-            width: 100%;
-            padding: 10px 15px;
-            margin: 8px 0;
-            box-sizing: border-box;
+            font-size: 24px;
         }
 
         #save {
-            background-color: mediumblue;
             font-weight: bolder;
         }
 
@@ -81,10 +190,16 @@
         .disabled #save {
             background-color: #cccccc;
             color: white;
+            /* grayscale images, etc */
+            -webkit-filter: grayscale(100%);
+            -moz-filter: grayscale(100%);
+            -o-filter: grayscale(100%);
+            -ms-filter: grayscale(100%);
+            filter: grayscale(100%);
         }
 
         .enabled {
-            background-color: #4CAF50;
+            background-color: forestgreen;
             color: white;
         }
 
@@ -94,6 +209,10 @@
             color: #ccc;
             padding: 0;
             margin-top: 20px;
+        }
+
+        .progress {
+            font-size: x-large;
         }
 
         /* Style buttons */
@@ -112,11 +231,25 @@
             /* Mouse pointer on hover */
         }
 
-        #loadFileXml {
-            background-color: #4CAF50;
-            /* Green */
+        .example {
+            padding-left: 30px;
+            margin-top: 0;
+            padding-top: 0;
+            font-size: 0.75em;
+            color: cadetblue;
+        }
+
+        #loadFromServer,
+        #loadFromFile {
+            background-color: forestgreen;
             color: white;
         }
+
+        #loadFromServer:hover,
+        #loadFromFile:hover {
+            background-color: darkgreen;
+        }
+
 
         /* Darker background on mouse-over */
         .btn:hover {
@@ -314,20 +447,148 @@
         label:hover:before {
             border: 2px solid #4778d9 !important;
         }
+
+        #logout {
+            position: absolute;
+            display: none;
+            top: 9;
+            right: 10;
+            z-index: 9;
+        }
+
+        /***************************************************/
+        /* Dialog boxes */
+
+        #dialog-form {
+            display: none;
+        }
+
+        .modal-header {
+            padding: 2px 16px;
+            background-color: darkblue;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            /* Hidden by default */
+            position: fixed;
+            /* Stay in place */
+            z-index: 99;
+            /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            /* Full width */
+            height: 100%;
+            /* Full height */
+            overflow: auto;
+            /* Enable scroll if needed */
+            background-color: rgb(0, 0, 0);
+            /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4);
+            /* Black w/ opacity */
+        }
+
+        /* Modal Content/Box */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            /* Could be more or less, depending on screen size */
+        }
     </style>
 </head>
 
 <body>
+    <div id="get-map-api-panel" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1>Safe Places</h1>
+            </div>
+
+            <p id="loginQuestion">Enter a Google Maps Javascript API key.</p>
+            <p>Either <a href="https://developers.google.com/maps/documentation/javascript/get-api-key">get your
+                    own key</a>
+                or request one from an administrator.</p>
+
+            <form>
+                <label for="api-key">Map API Key:</label>
+                <input type="text" name="api-key" id="api-key" placeholder="map_api_key"
+                    class="text ui-widget-content ui-corner-all">
+                <p />
+
+                <input class="button" type="button" id="submit" value="Submit" onclick="enterAPIKey();" />
+                &nbsp;
+            </form>
+        </div>
+    </div>
+
+    <div id="login-panel" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1>Safe Places</h1>
+            </div>
+
+            <p id="loginQuestion">Enter your credentials.</p>
+            <p id="validateTips">&nbsp;</p>
+
+            <form>
+                <label for="Username">Username:</label>
+                <input type="text" name="username" id="username" placeholder="name"
+                    class="text ui-widget-content ui-corner-all">
+                <p />
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" placeholder="password"
+                    class="text ui-widget-content ui-corner-all">
+
+
+                <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                <p />
+
+                <img id="logo" onclick="onLogoClick()" src="" />
+                <img id="logo_name" onclick="onLogoClick()" src="" />
+                <input class="button" type="button" id="login" value="Login" onclick="doLogin()" />
+            </form>
+        </div>
+    </div>
+
+    <div id="saving-panel" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Saving</h2>
+            </div>
+
+            <p class="progress">Connecting...</p>
+        </div>
+    </div>
+
+    <button class="btn" onclick="doLogout()" id="logout">
+        <i class="fas fa-sign-out-alt"></i> Logout</button>
+
     <div id="floating-panel">
         <h2>Safe Places - Publishing Tool</h2>
 
+
         <input id="privatekitJSON" style="display:none;" type="file" multiple="multiple" accept=".json"
             onchange="loadPath()" />
-
-        <button class="btn" onclick="$('#privatekitJSON').click();" id="loadFileXml">
+        <button class="button" onclick="$('#privatekitJSON').click();" id="loadFromFile">
             <i class="fa fa-folder-open"></i> Load</button>
 
-        <button class="btn btn_view" onclick="zoomToExtent()" id="zoomToExtent">
+        <button class="button" onclick="loadPath()" id="loadFromServer">
+            <img id="btn_logo" src="" /> Load</button>
+
+        <button class="button btn_view" onclick="zoomToExtent()" id="zoomToExtent">
             <i class="fas fa-expand-arrows-alt"></i> Zoom</button>
 
 
@@ -372,22 +633,176 @@
         </div>
     </div>
     <div id="map"></div>
+    <img id="map_logo" onclick="onLogoClick()" src="" />
+    <img id="map_logo_name" onclick="onLogoClick()" src="" />
+
     <script>
-        function isDefined(parameter) {
-            return !(typeof (parameter) === "undefined");
+        ///////////////////////////////////////
+        // logging support
+
+        function HHMMSSmmm() {
+            var now = new Date();
+            var ms = "000" + now.getMilliseconds();
+            return now.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1") + "." + ms.substr(ms.length - 3);
         }
 
         function isInitalized(parameter) {
             return isDefined(parameter) && (parameter != null);
         }
 
+        function isDefined(parameter) {
+            return !(typeof (parameter) === "undefined");
+        }
+
+        function LOG(str) {
+            if (!(typeof str === 'string' || str instanceof String))
+                str = JSON.stringify(str);
+
+            console.log(HHMMSSmmm() + " - " + str + "\n");
+        }
+
+        // AJAX helpers
+        //
+        // Adapted from:  http://www.html5rocks.com/en/tutorials/es6/promises/#toc-javascript-promises
+        // Added the optional respType parameter
+        //
+        // Use:
+        //   get("http://...").then(function(result){
+        //        ... do whatever with 'result' ...
+        //       },
+        //       function(err){
+        //       });
+        //
+
+        function get(url, respType, auth) {
+            return doXHR("GET", url, respType, auth, null);
+        }
+
+        // Ex: post("createAcct.php", "fname=Henry&lname=Ford");
+        //     post("compactDbase.php");
+        function post(url, data, creds) {
+            return doXHR("POST", url, data, null, creds);
+        }
+
+        function doXHR(method, url, param, auth, creds) {
+            LOG("XHR " + method + ": " + url, "XHR");
+
+            // Return a new promise.
+            return new Promise(function (resolve, reject) {
+                // Do the usual XHR stuff
+                var req = new XMLHttpRequest();
+
+                if (method === "GET" && isDefined(param)) {
+                    var respType = param;
+                    if (respType === "blob" || respType === "arrayBuffer" || respType === "document" ||
+                        respType === "json" || respType === "text")
+                        req.responseType = respType;
+                }
+                req.open(method, url);
+
+                req.onload = function () {
+                    // This is called even on 404 etc
+                    // so check the status
+                    if (req.status === 200) {
+                        // Resolve the promise with the response text
+                        LOG("XHR " + method + " success", "XHR");
+                        resolve(req.response);
+                    } else {
+                        LOG("XHR " + method + " failed:" + req.status, "XHR");
+                        // Otherwise reject with the status text
+                        // which will hopefully be a meaningful error
+                        reject(Error(req.statusText + ": " + url));
+                    }
+                };
+
+                // Handle network errors
+                req.onerror = function () {
+                    LOG("XHR network error", "XHR");
+                    reject(Error("Network Error"));
+                };
+
+                // Make the request
+                if (method === "POST" && isDefined(param)) {
+                    var data = param;
+                    if (isDefined(creds)) {
+                        req.setRequestHeader("Authorization", creds);
+                    }
+                    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                    req.send(data);
+                } else {
+                    req.setRequestHeader("Authorization", "Basic " + auth);
+                    req.send();
+                }
+            });
+        }
+
+        ///////////////////////////////////////
+        // Customization!
+
+        var has_backend = false; // When true use standard back API calls
+        var logo = ""; // Enter a logo for backend
+        var logo_text = ""; // Enter name or second graphic
+        var logo_destination_url = "";
+
+        if (logo) {
+            $("#logo").attr("src", logo);
+            $("#btn_logo").attr("src", logo);
+            $("#map_logo").attr("src", logo);
+        } else {
+            $("#logo").hide();
+            $("#btn_logo").hide();
+            $("#map_logo").hide();
+        }
+
+        if (logo_text) {
+            $("#logo_name").attr("src", logo_text);
+            $("#map_logo_name").attr("src", logo_text);
+        } else {
+            $("#logo_name").hide();
+            $("#map_logo_name").hide();
+        }
+
+        $(document).ready(function () {
+            if (has_backend) {
+                $("#loadFromFile").hide();
+                $('#password').keypress(function (e) {
+                    if (e.keyCode == 13)
+                        $('#login').click();
+                });
+            } else {
+                $("#loadFromServer").hide();
+                $('#api-key').keypress(function (e) {
+                    if (e.keyCode == 13)
+                        $('#submit').click();
+                });
+            }
+        });
+
+        ///////////////////////////////////////
+        // Login
+
         var MAP_API_KEY = localStorage.getItem("MAP_API_KEY");
 
-        if (!isInitalized(MAP_API_KEY) || MAP_API_KEY == "" || MAP_API_KEY == null || MAP_API_KEY == "null" ||
-            MAP_API_KEY ==
-            "MAP_API_KEY")
-            enterAPIKey();
-        else {
+        if (!isInitalized(MAP_API_KEY) || MAP_API_KEY == "" || MAP_API_KEY == null ||
+            MAP_API_KEY == "null" || MAP_API_KEY == "MAP_API_KEY") {
+            // First run, do the "startup" sequence
+            startupSequence()
+        } else {
+            // Returning, already finished with the startup
+
+            // Restore the last published name/URL
+            // TODO: Call the backend instead to populate with an saved Name and URL
+            $("#org_name").val(localStorage.getItem('org_name'));
+            $("#org_url").val(localStorage.getItem('org_url'));
+
+            $("#floating-panel").show();
+            $("#map").show();
+            $("#map_logo").show();
+            $("#map_logo_name").show();
+            if (has_backend)
+                $("#logout").show();
+
+            // Inject the Google Maps Javascript API key
             var script = document.createElement("script");
             script.async = true;
             script.defer = true;
@@ -395,25 +810,53 @@
                 "https://maps.googleapis.com/maps/api/js?key=" + MAP_API_KEY +
                 "&libraries=drawing,geometry&callback=initMap";
             document.head.appendChild(script);
+        }
 
-
-            function DOMEval(code, doc) {
-                doc = doc || document;
-
-                var script = doc.createElement("script");
-
-                script.text = code;
-                doc.head.appendChild(script).parentNode.removeChild(script);
+        function startupSequence() {
+            // Setup the web UI for whatever login is necessary
+            if (has_backend) {
+                $("#login-panel").show();
+            } else {
+                $("#get-map-api-panel").show();
             }
         }
 
         function enterAPIKey() {
-            MAP_API_KEY = prompt(
-                "Enter a Google Maps JavaScript API Key.  You can obtain this from you support team.:",
-                "MAP_API_KEY");
-            localStorage.setItem('MAP_API_KEY', MAP_API_KEY);
+            localStorage.setItem("MAP_API_KEY", $("#api-key").val());
             location.reload();
         }
+
+        function doLogin() {
+            var username = $("#username").val();
+            var password = $("#password").val();
+
+            var res = post("/login/",
+                '{ "username": "' + username + '", "password": "' + password + '" }').then(
+                function (result) {
+                    var data = JSON.parse(result);
+
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('MAP_API_KEY', data.maps_api_key);
+                    document.cookie = "token=" + data.token;
+                    location.reload();
+                },
+                function (err) {
+                    $("#validateTips").text(err);
+                });
+        }
+
+        function doLogout() {
+            localStorage.setItem('token', null);
+            localStorage.setItem('MAP_API_KEY', null);
+            document.cookie = "token= ; expires = Thu, 01 Jan 1970 00:00:00 GMT"
+            location.reload();
+        }
+
+        function onLogoClick() {
+            window.open(logo_destination_url);
+        }
+
+
 
         var exposurePoints = [];
 
@@ -494,7 +937,7 @@
 
         function selectArea() {
             if (document.getElementById("select-area").classList.contains("pressed")) {
-                // Already in select area mode, untoggle button and exit the 
+                // Already in select area mode, untoggle button and exit the
                 document.getElementById("select-area").classList.remove("pressed");
                 drawingManager.setDrawingMode(null);
                 return;
@@ -599,7 +1042,6 @@
             //   * Extra info in the input
             //   * Improperly sorted data (can happen after an Import)
             var result = [];
-
             for (var i = 0; i < arr.length; i++) {
                 elem = arr[i];
                 if ("time" in elem && "latitude" in elem && "longitude" in elem) {
@@ -615,79 +1057,117 @@
             return result;
         }
 
+        function loadExposuredata(exposureJSON) {
+
+            let lastLatLng = null;
+            let currentGroupId = 0;
+            let currentGroupBounds = new google.maps.LatLngBounds();
+
+            exposureJSON.forEach(function (element, index) {
+                elementLatLng = new google.maps.LatLng(element.latitude, element
+                    .longitude);
+
+                let marker = new google.maps.Marker({
+                    position: elementLatLng,
+                    title: new Date(element.time)
+                        .toLocaleString(), //convert to UC unix to a "human" time with local time conversion
+                    icon: MARKER_ICONS.DEFAULT,
+                    map: map
+                });
+
+                points.push(marker);
+
+                //just add this location to our group bounds in order to update the center of the group appropriately
+                currentGroupBounds.extend(elementLatLng);
+
+                //set our current JSON element properties with our current group info
+                element.groupId = currentGroupId;
+                element.groupType = GROUP_TYPES.UNDEF;
+
+                //we add the event listener after we determine what group the marker is in
+                google.maps.event.addListener(marker, 'click', (function (
+                    thisMarker,
+                    groupId) {
+                    return function (event) {
+                        selectNone();
+                        enableDelete(false);
+
+                        //then set the clicked marker to green
+                        thisMarker.setIcon(MARKER_ICONS.SELECTED);
+
+                        selectedMarker = thisMarker;
+                    }
+                })(marker, currentGroupId));
+
+                lastLatLng = elementLatLng;
+            });
+
+        }
+
         function loadPath() {
 
-            for (var i = 0; i < $("#privatekitJSON").get(0).files.length; i++) {
+            if (has_backend) {
 
-                file = $("#privatekitJSON").get(0).files[i];
+                // Load from backend
 
-                if (typeof window.FileReader !== 'function') {
-                    alert("The file API isn't supported on this browser yet.");
-                } else if (file === undefined || !fileRegExp.test(file.name)) {
-                    alert("Unable to load the file.");
-                } else {
+                const url = "/redacted_trails/";
+                fetch(url)
+                    .then(response => response.json())
+                    .then(function (content) {
+                        var trails = content['data'];
+                        for (var i = 0; i < trails.length; i++) {
+                            exposureJSON = trails[i]['trail'];
 
-                    fr = new FileReader();
-                    fr.onload = (function (map, points) {
-                        return function (event) {
-                            let lines = event.target.result;
-                            let lastLatLng = null;
-                            let currentGroupId = 0;
-                            let currentGroupBounds = new google.maps.LatLngBounds();
-                            exposureJSON = normalizeInputData(JSON.parse(lines));
+                            loadExposuredata(exposureJSON);
+                        }
+                        // Zoom to see all of the loaded points
+                        zoomToExtent();
 
-                            exposureJSON.forEach(function (element, index) {
-                                elementLatLng = new google.maps.LatLng(element.latitude, element
-                                    .longitude);
+                        //auto-classify all points
+                        initDateSlider(exposureJSON[0].time, exposureJSON[exposureJSON.length - 1]
+                            .time);
+                        updateStats();
 
-                                let marker = new google.maps.Marker({
-                                    position: elementLatLng,
-                                    title: new Date(element.time)
-                                        .toLocaleString(), //convert to UC unix to a "human" time with local time conversion
-                                    icon: MARKER_ICONS.DEFAULT,
-                                    map: map
-                                });
+                        $("#save").removeClass("disabled").addClass("enabled").prop("disabled", false);
+                    })
+                    .catch(err => console.log("Can't access " + url + " response. Blocked by browser?" + err))
+            } else {
 
-                                points.push(marker);
+                // Load from selected files
 
-                                //just add this location to our group bounds in order to update the center of the group appropriately
-                                currentGroupBounds.extend(elementLatLng);
+                for (var i = 0; i < $("#privatekitJSON").get(0).files.length; i++) {
 
-                                //set our current JSON element properties with our current group info
-                                element.groupId = currentGroupId;
-                                element.groupType = GROUP_TYPES.UNDEF;
+                    file = $("#privatekitJSON").get(0).files[i];
 
-                                //we add the event listener after we determine what group the marker is in
-                                google.maps.event.addListener(marker, 'click', (function (
-                                    thisMarker,
-                                    groupId) {
-                                    return function (event) {
-                                        selectNone();
-                                        enableDelete(false);
+                    if (typeof window.FileReader !== 'function') {
+                        alert("The file API isn't supported on this browser yet.");
+                    } else if (file === undefined || !fileRegExp.test(file.name)) {
+                        alert("Unable to load the file.");
+                    } else {
 
-                                        //then set the clicked marker to green
-                                        thisMarker.setIcon(MARKER_ICONS.SELECTED);
+                    alert(file);
+                        fr = new FileReader();
+                        fr.onload = (function (map, points) {
+                            return function (event) {
+                                let lines = event.target.result;
+                                exposureJSON = normalizeInputData(JSON.parse(lines));
+                                loadExposuredata(exposureJSON);
 
-                                        selectedMarker = thisMarker;
-                                    }
-                                })(marker, currentGroupId));
+                                // Zoom to see all of the loaded points
+                                zoomToExtent();
 
-                                lastLatLng = elementLatLng;
-                            });
+                                //auto-classify all points
+                                initDateSlider(exposureJSON[0].time, exposureJSON[exposureJSON.length - 1]
+                                    .time);
+                                updateStats();
+                            };
+                        })(map, exposurePoints);
+                        fr.readAsText(file);
 
-                            // Zoom to see all of the loaded points
-                            zoomToExtent();
-
-                            //auto-classify all points
-                            initDateSlider(exposureJSON[0].time, exposureJSON[exposureJSON.length - 1]
-                                .time);
-                            updateStats();
-                        };
-                    })(map, exposurePoints);
-                    fr.readAsText(file);
-
-                    $("#save").removeClass("disabled").addClass("enabled").prop("disabled", false);
+                        $("#save").removeClass("disabled").addClass("enabled").prop("disabled", false);
+                    }
                 }
+
             }
         }
 
@@ -891,13 +1371,16 @@
             if (mapBounds === undefined || mapBounds === null) {
                 if (selectedArea)
                     return zoomToArea();
-                else if (isInitalized(exposurePoints)) {
+                else if (isInitalized(exposurePoints) && exposurePoints.length > 0) {
                     mapBounds = new google.maps.LatLngBounds();
                     exposurePoints.forEach(function (element, index) {
                         if (element.getMap() !== null) {
                             mapBounds.extend(element.getPosition());
                         }
                     });
+                } else {
+                    map.setCenter(new google.maps.LatLng(39.0609926, -94.5734936, 19.75));
+                    return;
                 }
             }
             map.setCenter(mapBounds.getCenter());
@@ -1018,10 +1501,12 @@
                 }
             }
 
+            // Remember these for next time we load the Publisher
+            localStorage.setItem('org_name', $("#org_name").val());
+            localStorage.setItem('org_url', $("#org_url").val());
+
             var nowUTC = new Date().toISOString();
             var timeNow = Date.parse(nowUTC);
-
-            alert($("#org_name").val());
 
             let complete = {
                 "authority_name": $("#org_name").val(),
@@ -1030,17 +1515,43 @@
                 "concern_points": out
             };
 
-            let text = JSON.stringify(complete);
-            let filename = "safe-paths.json";
+            if (has_backend) {
+                // POST safe-paths.json data to the backend
 
-            var a = document.createElement('a');
-            a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-            a.setAttribute('download', filename);
-            a.click();
+                $("#saving-panel").show();
 
-            // TODO: Use HTML5 saveAs()
-            //var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-            //saveAs(blob, filename);
+                // request options
+                const options = {
+                    method: 'POST',
+                    body: JSON.stringify(complete),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+                const url = "/safe_paths/";
+                fetch(url, options)
+                    .then(response => response.json())
+                    .then(function (content) {
+                        $("#progress").text("Result:" + content);
+                        setTimeout(function () {
+                            $("#saving-panel").hide();
+                        }, 1000);
+                    })
+            } else {
+                // Simple save to safe-paths.json
+
+                let text = JSON.stringify(complete);
+                let filename = "safe-paths.json";
+
+                var a = document.createElement('a');
+                a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                a.setAttribute('download', filename);
+                a.click();
+
+                // TODO: Use HTML5 saveAs()
+                //var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+                //saveAs(blob, filename);
+            }
         }
     </script>
 </body>
