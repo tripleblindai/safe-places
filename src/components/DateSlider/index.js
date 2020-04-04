@@ -1,33 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Range } from "rc-slider";
 import moment from "moment";
-import { connect } from "react-redux";
-import { getTrackStart, getTrackEnd } from "../../selectors";
+import { connect, useDispatch, useSelector } from "react-redux";
+import { getTrackStart, getTrackEnd, getFilter } from "../../selectors";
 import styles from "./styles.module.scss";
+import { updateFilter } from "../../actions";
 
 function DateSlider({ trackStart, trackEnd }) {
-  //const value = Math.round(trackStart);
-  //const valueb = Math.round(trackEnd);
-
-  const [value, setValue] = useState([trackStart, trackEnd]);
-
-  const steps = 30; // Math.round(max - min);
+  const filter = useSelector(state => getFilter(state));
+  const dispatch = useDispatch();
+  const steps = 30;
+  useEffect(() => {
+    dispatch(updateFilter([trackStart, trackEnd]));
+  }, [trackStart, trackEnd]);
 
   const handleChange = value => {
-    //const { onChange } = this.props;
-    setValue(value);
+    dispatch(updateFilter(value));
   };
 
   return (
     <div class="wfp--form-item" style={{ width: "100%" }}>
       <label class="wfp--label">
-        Zeitraum {trackStart} {trackEnd}
+        {moment.utc(filter ? filter[0] : trackStart).format("YYYY-MM-DD HH:mm")}{" "}
+        - {moment.utc(filter ? filter[1] : trackEnd).format("YYYY-MM-DD HH:mm")}
       </label>
+
       <Range
         min={trackStart}
         max={trackEnd}
         steps={steps}
-        value={value}
+        value={filter}
         onChange={handleChange}
       />
     </div>

@@ -48,17 +48,21 @@ function Sidebar({ addTrackEntryTrigger, track }) {
             </>
           )}
         </div>
-        <Dropzone />
-        <Button
-          onClick={save}
-          iconReverse
-          icon={<FontAwesomeIcon icon={faSave} />}
-        >
-          Save
-        </Button>
+        <div className={styles.buttons}>
+          <Dropzone />
+          <Button
+            onClick={save}
+            iconReverse
+            icon={<FontAwesomeIcon icon={faSave} />}
+          >
+            Save
+          </Button>
+        </div>
+      </div>
+      <div className={styles.filter}>
+        <DateSlider />
       </div>
       <div className={styles.toolbar}>
-        <DateSlider />
         <Button
           kind="secondary"
           icon={<FontAwesomeIcon icon={faPlusCircle} />}

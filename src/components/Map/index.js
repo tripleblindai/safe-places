@@ -4,7 +4,7 @@ import Track from "./trackPath";
 import { token } from "../../constants/mapbox";
 import { connect } from "react-redux";
 import { deleteTrackEntry, addSelected } from "../../actions";
-import { getTrackPath } from "../../selectors";
+import { getFilteredTrackPath } from "../../selectors";
 import track from "./trackPath";
 import { fromJS } from "immutable";
 import Popup from "../Popup";
@@ -284,7 +284,7 @@ function Map({ addSelectedTrigger, trackPath }) {
 
 const mapStateToProps = state => {
   return {
-    trackPath: getTrackPath(state)
+    trackPath: getFilteredTrackPath(state)
   };
 };
 

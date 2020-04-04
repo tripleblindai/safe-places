@@ -4,6 +4,7 @@ import detail from "./detail";
 import positions from "./positions";
 import warnings from "./warnings";
 import selectedTracks from "./selectedTracks";
+import filter from "./filter";
 import tracks from "./tracks";
 import report from "./report";
 import infections from "./infections";
@@ -15,6 +16,7 @@ const rootReducer = combineReducers({
   infections,
   positions,
   warnings,
+  filter,
   tracks,
   selectedTracks,
   report

@@ -33,6 +33,13 @@ export const addTrackEntry = data => {
   };
 };
 
+export const updateFilter = data => {
+  return {
+    type: types.UPDATE_FILTER,
+    data
+  };
+};
+
 export const editTrackEntry = data => {
   return {
     type: types.EDIT_TRACK_ENTRY,

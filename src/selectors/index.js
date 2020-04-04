@@ -4,15 +4,30 @@ export const getAllPositions = state => state.positions;
 export const getAllWarnings = state => state.warnings;
 export const getDetail = state => state.detail;
 export const getTrack = state => state.reducer.tracks;
+export const getFilter = state => state.reducer.filter;
 export const getTrackPath = state =>
-  state.reducer.tracks
+  state.reducer.tracks && state.reducer.tracks.concern_points
     ? state.reducer.tracks.concern_points.sort(function(a, b) {
         return a.time - b.time;
       })
     : [];
 
+export const getFilteredTrackPath = state =>
+  state.reducer.tracks && state.reducer.tracks.concern_points
+    ? state.reducer.tracks.concern_points
+        .sort(function(a, b) {
+          return a.time - b.time;
+        })
+        .filter(
+          e =>
+            e.time >= state.reducer.filter[0] &&
+            e.time <= state.reducer.filter[1]
+        )
+    : [];
+
 export const getTrackStart = state =>
   state.reducer.tracks &&
+  state.reducer.tracks.concern_points &&
   Math.min.apply(
     Math,
     state.reducer.tracks.concern_points.map(function(o) {
@@ -22,6 +37,7 @@ export const getTrackStart = state =>
 
 export const getTrackEnd = state =>
   state.reducer.tracks &&
+  state.reducer.tracks.concern_points &&
   Math.max.apply(
     Math,
     state.reducer.tracks.concern_points.map(function(o) {

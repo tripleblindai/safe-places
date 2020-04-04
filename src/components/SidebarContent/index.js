@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { connect } from "react-redux";
+import { connect, useSelector, useDispatch } from "react-redux";
 import {
   addTrackEntry,
   editTrackEntry,
   deleteTrackEntry,
   addSelected
 } from "../../actions";
-import { getTrack, getSelectedTracks } from "../../selectors";
+import {
+  getTrack,
+  getSelectedTracks,
+  getFilteredTrackPath
+} from "../../selectors";
 import { Button, List, ListItem } from "@wfp/ui";
 import styles from "./styles.module.scss";
 
@@ -14,25 +18,30 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTrashAlt,
   faMapMarkerQuestion,
-  faArrowAltToBottom,
-  faArrowAltToTop,
   faEdit
 } from "@fortawesome/pro-solid-svg-icons";
 import moment from "moment";
 import Empty from "../Empty";
 import EntryForm from "../EntryForm";
+import { CounterComponent } from "../../selectors/indexNew";
+import { NavLink } from "react-router-dom";
 
-function SidebarContent({
-  addSelectedTrigger,
-  editTrackEntryTrigger,
-  deleteTrackEntryTrigger,
-  selectedTracks,
-  track
-}) {
+export default function SidebarContent() {
   const [open, setOpen] = useState(false);
+
+  const selectedTracks = useSelector(state => getSelectedTracks(state));
+  const filteredTrackPath = useSelector(state => getFilteredTrackPath(state));
+
+  const dispatch = useDispatch();
+  const addTrackEntryTrigger = data => dispatch(addTrackEntry(data));
+  const editTrackEntryTrigger = data => dispatch(editTrackEntry(data));
+  const addSelectedTrigger = data => dispatch(addSelected(data));
+  const deleteTrackEntryTrigger = data => dispatch(deleteTrackEntry(data));
+
+  const stringStore = CounterComponent();
   return (
     <>
-      {!track.concern_points && (
+      {!filteredTrackPath && (
         <Empty
           title="No file opened"
           className="attendance-detail-empt"
@@ -43,8 +52,8 @@ function SidebarContent({
         </Empty>
       )}
       {/* Loaded: {JSON.stringify(track)} */}
-      {track.concern_points &&
-        track.concern_points.map((e, i) => (
+      {filteredTrackPath &&
+        filteredTrackPath.map((e, i) => (
           <div
             className={`${styles.item} ${selectedTracks.includes(e.time) &&
               styles.selectedItem}`}
@@ -67,41 +76,22 @@ function SidebarContent({
               </div>
 
               <div className={styles.buttons}>
+                <NavLink to="?edit=true">
+                  <Button
+                    kind="primary"
+                    icon={<FontAwesomeIcon icon={faEdit} />}
+                    onClick={() => setOpen(e)}
+                  ></Button>
+                </NavLink>
                 <Button
-                  kind="secondary"
-                  icon={<FontAwesomeIcon icon={faEdit} />}
-                  onClick={() => setOpen(e)}
-                ></Button>
-                <Button
-                  kind="secondary"
+                  kind="primary"
                   icon={<FontAwesomeIcon icon={faTrashAlt} />}
                   onClick={() => deleteTrackEntryTrigger(e.time)}
                 ></Button>
               </div>
             </div>
-            {open === e && (
-              <div className={styles.editForm}>
-                <EntryForm />
-              </div>
-            )}
           </div>
         ))}
     </>
   );
 }
-
-const mapStateToProps = state => {
-  return {
-    selectedTracks: getSelectedTracks(state),
-    track: getTrack(state)
-  };
-};
-
-const mapDispatchToProps = dispatch => ({
-  addTrackEntryTrigger: data => dispatch(addTrackEntry(data)),
-  editTrackEntryTrigger: data => dispatch(editTrackEntry(data)),
-  addSelectedTrigger: data => dispatch(addSelected(data)),
-  deleteTrackEntryTrigger: data => dispatch(deleteTrackEntry(data))
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(SidebarContent);

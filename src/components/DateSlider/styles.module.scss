@@ -1,10 +1,11 @@
-@import "~@wfp/ui/source/globals/scss/vars";
+@import "../../scss/global";
+
 :global {
   $prefixClass: rc-slider;
 
   $disabledColor: #ccc;
   $border-radius-base: 6px;
-  $primary-color: $brand-01;
+  $primary-color: $interactive-01;
   $tooltip-color: #fff;
   $tooltip-bg: lighten(#666, 4%);
   $tooltip-arrow-width: 4px;
@@ -55,7 +56,7 @@
       left: 0;
       height: 4px;
       border-radius: $border-radius-base;
-      background-color: lighten($primary-color, 20);
+      background-color: $primary-color;
     }
 
     &-handle {
@@ -68,7 +69,7 @@
       cursor: -webkit-grab;
       cursor: grab;
       border-radius: 50%;
-      border: solid 2px lighten($primary-color, 10%);
+      border: solid 2px $primary-color;
       background-color: #fff;
       touch-action: pan-x;
 

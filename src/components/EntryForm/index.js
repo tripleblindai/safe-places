@@ -5,16 +5,97 @@ import { addTrackEntry } from "../../actions";
 import { getTrack, getSelectedTracks } from "../../selectors";
 import { Button, TextArea, TextInput } from "@wfp/ui";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlusCircle } from "@fortawesome/pro-solid-svg-icons";
+import { useParams, useLocation } from "react-router";
+import Geocode from "react-geocode";
+
+import {
+  faPlusCircle,
+  faCrosshairs,
+  faMapMarkerQuestion,
+  faCross,
+  faTimes
+} from "@fortawesome/pro-solid-svg-icons";
 import DateInput from "../DateInput";
 import styles from "./styles.module.scss";
+import { NavLink } from "react-router-dom";
+// set Google Maps Geocoding API for purposes of quota management. Its optional but recommended.
+Geocode.setApiKey("AIzaSyAla6ga3Cinggk981OyWSnWnziEocaB_pU");
+
+// set response language. Defaults to english.
+Geocode.setLanguage("en");
+
+// set response region. Its optional.
+// A Geocoding request with region=es (Spain) will return the Spanish city.
+Geocode.setRegion("es");
+
+// Enable or disable logs. Its optional.
+Geocode.enableDebug();
 
 const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
   const methods = useForm({
     defaultValues: initialData
   });
 
-  const { control, getValues, register, errors, handleSubmit } = methods;
+  const { control, getValues, setValue, errors, handleSubmit } = methods;
+
+  const location = useLocation();
+
+  console.log("location", location.search);
+  /*if (!location.search.includes("edit")) {
+    return null;
+  }*/
+
+  // Get address from latidude & longitude.
+  const fromLatLng = () => {
+    const values = getValues();
+    Geocode.fromLatLng(values.latitude, values.longitude).then(
+      response => {
+        const search = code => {
+          const find = components.find(e => e.types.includes(code));
+          return find ? find.long_name : "";
+        };
+        const address = response.results[0].formatted_address;
+        const components = response.results[0].address_components;
+        console.log(response.results[0].address_components);
+        setValue([
+          {
+            street: `${search("route")} ${search("street_number")}`
+          },
+          {
+            postal: search("postal_code")
+          },
+          { town: search("locality") }
+        ]);
+      },
+      error => {
+        console.error(error);
+      }
+    );
+  };
+
+  const fromAddress = () => {
+    const values = getValues();
+    const address = `${values.street} ${values.other} ${values.town} ${values.postal}`;
+    Geocode.fromAddress(address).then(
+      response => {
+        const { lat, lng } = response.results[0].geometry.location;
+        console.log(lat, lng);
+
+        setValue([
+          {
+            latitude: lat
+          },
+          {
+            longitude: lng
+          }
+        ]);
+      },
+
+      error => {
+        console.error(error);
+      }
+    );
+  };
 
   const onSubmit = values => {
     console.log(values);
@@ -22,11 +103,18 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-      {errors.email && errors.email.message}
-
+      <div className={styles.header}>
+        <div className={styles.headerTitle}>Edit</div>
+        <NavLink to="/">
+          <Button
+            icon={<FontAwesomeIcon icon={faTimes} />}
+            className={styles.closeButton}
+          ></Button>
+        </NavLink>
+      </div>
       <div className={styles.dateWrapper}>
         <Controller
-          as={<DateInput labelText="Delivery date" />}
+          as={<DateInput labelText="Date" />}
           name={`date`}
           type="date"
           min={null}
@@ -34,7 +122,7 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
           control={control}
         />
         <Controller
-          as={<DateInput time labelText="Delivery time" type="time" />}
+          as={<DateInput time labelText="Time" type="time" />}
           name={`time`}
           defaultValue=""
           min={null}
@@ -46,49 +134,51 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
       <div className={styles.position}>
         <Controller
           as={<TextInput labelText="Latitude" />}
-          name={`latitude`}
-          defaultValue=""
+          name="latitude"
           control={control}
         />
         <Controller
           as={<TextInput labelText="Longitude" />}
-          name={`longitude`}
-          defaultValue=""
+          name="longitude"
           control={control}
         />
+        <Button
+          onClick={fromLatLng}
+          icon={<FontAwesomeIcon icon={faCrosshairs} />}
+        ></Button>
       </div>
 
       <div className={styles.address}>
         <div className={styles.streetWrapper}>
           <Controller
             as={<TextInput labelText="Street" />}
-            name={`street`}
-            defaultValue=""
+            name="street"
             control={control}
           />
           <Controller
             as={<TextInput labelText="other" />}
-            name={`other`}
-            defaultValue=""
+            name="other"
             control={control}
           />
         </div>
         <div className={styles.townWrapper}>
           <Controller
             as={<TextInput labelText="Town" />}
-            name={`town`}
-            defaultValue=""
+            name="town"
             control={control}
           />
           <Controller
             as={<TextInput labelText="Postal code" />}
-            name={`postal`}
-            defaultValue=""
+            name="postal"
             control={control}
           />
+          <Button
+            onClick={fromAddress}
+            icon={<FontAwesomeIcon icon={faMapMarkerQuestion} />}
+          ></Button>
         </div>
       </div>
-      <div className={styles.comment}>
+      <div className={styles.commentWrapper}>
         <Controller
           as={<TextArea labelText="Comment" />}
           name={`comment`}
@@ -98,7 +188,7 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
       </div>
 
       <Button type="submit" onClick={() => addTrackEntryTrigger()}>
-        Add to tracks
+        {initialData ? "Update" : "Add to tracks"}
       </Button>
     </form>
   );
