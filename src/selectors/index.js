@@ -74,7 +74,6 @@ export const getSelectedTracksData = state => {
     state.reducer.tracks.concern_points &&
     state.reducer.selectedTracks
       ? state.reducer.tracks.concern_points.filter(e => {
-          console.log(e.time, state.reducer.selectedTracks[0]);
           return e.time === state.reducer.selectedTracks[0];
         })
       : undefined;

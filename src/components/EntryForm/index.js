@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { connect } from "react-redux";
-import { addTrackEntry } from "../../actions";
+import { connect, useDispatch } from "react-redux";
+import { addTrackEntry, editTrackEntry } from "../../actions";
 import { getTrack, getSelectedTracks } from "../../selectors";
 import { Button, TextArea, TextInput } from "@wfp/ui";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useParams, useLocation } from "react-router";
+import { useParams, useLocation, useHistory } from "react-router";
 import Geocode from "react-geocode";
 
 import {
@@ -36,7 +36,14 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
     defaultValues: initialData
   });
 
-  const { control, getValues, setValue, errors, handleSubmit } = methods;
+  const { control, getValues, setValue, reset, handleSubmit } = methods;
+
+  const dispatch = useDispatch();
+  let history = useHistory();
+
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData]);
 
   const location = useLocation();
 
@@ -99,6 +106,9 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
 
   const onSubmit = values => {
     console.log(values);
+
+    dispatch(editTrackEntry(values, initialData));
+    history.push("/");
   };
 
   return (
@@ -186,9 +196,7 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
         />
       </div>
 
-      <Button type="submit" onClick={() => addTrackEntryTrigger()}>
-        {initialData ? "Update" : "Add to tracks"}
-      </Button>
+      <Button type="submit">{initialData ? "Update" : "Add to tracks"}</Button>
     </form>
   );
 };

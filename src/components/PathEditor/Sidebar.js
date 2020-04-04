@@ -17,6 +17,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { addTrackEntry } from "../../actions";
 import EntryForm from "../EntryForm";
+import { NavLink } from "react-router-dom";
 
 function Sidebar({ addTrackEntryTrigger, track }) {
   const [openNewEntry, setOpenNewEntry] = useState(false);
@@ -63,13 +64,14 @@ function Sidebar({ addTrackEntryTrigger, track }) {
         <DateSlider />
       </div>
       <div className={styles.toolbar}>
-        <Button
-          kind="secondary"
-          icon={<FontAwesomeIcon icon={faPlusCircle} />}
-          onClick={() => setOpenNewEntry(!openNewEntry)}
-        >
-          Add Entry
-        </Button>
+        <NavLink to="/?edit=true">
+          <Button
+            kind="secondary"
+            icon={<FontAwesomeIcon icon={faPlusCircle} />}
+          >
+            Add Entry
+          </Button>
+        </NavLink>
       </div>
       {openNewEntry && (
         <div className={styles.newForm}>

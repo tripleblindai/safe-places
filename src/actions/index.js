@@ -40,10 +40,11 @@ export const updateFilter = data => {
   };
 };
 
-export const editTrackEntry = data => {
+export const editTrackEntry = (data, initialData) => {
   return {
     type: types.EDIT_TRACK_ENTRY,
-    data
+    data,
+    initialData
   };
 };
 

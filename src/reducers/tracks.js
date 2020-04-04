@@ -2,7 +2,7 @@ import {
   ADD_TRACK,
   DELETE_TRACK_ENTRY,
   MOVE_TRACK_ENTRY,
-  EDIT_TRACK,
+  EDIT_TRACK_ENTRY,
   COMPLETE_WARNING,
   COMPLETE_ALL_WARNINGS,
   CLEAR_ALL,
@@ -27,6 +27,16 @@ export default function todos(state = initialState, action) {
       );
       console.log("state", concern_points);
       return { ...state, concern_points };
+
+    case EDIT_TRACK_ENTRY:
+      const newPoints = state.concern_points;
+      const editPoint = newPoints.findIndex(
+        e => e.time === action.initialData.time
+      );
+
+      console.log("state", state, action, editPoint);
+      newPoints[editPoint] = action.data;
+      return { ...state, concern_points: newPoints };
 
     case MOVE_TRACK_ENTRY:
       const findIndex = state.findIndex(e => e.time !== action.time);
