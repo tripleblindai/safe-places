@@ -17,7 +17,7 @@ const PopupWrapper = ({ addSelectedTrigger, selectedTracksData }) => {
         latitude={selectedTracksData[0].latitude}
         closeOnClick={false}
         closeButton={false}
-        offsetTop={-14}
+        offsetTop={-10}
         onClose={() => addSelectedTrigger([])}
       >
         <div className={styles.popup}>

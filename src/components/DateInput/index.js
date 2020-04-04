@@ -8,7 +8,7 @@ import moment from "moment";
 export default function DateInput(props) {
   const { min, max, time } = props;
   // Format date value
-  const value = moment(props.value).format("YYYY-MM-DD");
+  //const value = moment(props.value).format("YYYY-MM-DD");
   return (
     <TextInput
       additional={
@@ -18,7 +18,6 @@ export default function DateInput(props) {
       }
       type="date"
       {...props}
-      value={value}
       formItemClassName={styles.dateInput}
       max={
         max !== undefined

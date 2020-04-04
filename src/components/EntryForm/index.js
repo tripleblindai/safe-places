@@ -19,7 +19,7 @@ import DateInput from "../DateInput";
 import styles from "./styles.module.scss";
 import { NavLink } from "react-router-dom";
 // set Google Maps Geocoding API for purposes of quota management. Its optional but recommended.
-Geocode.setApiKey("AIzaSyAla6ga3Cinggk981OyWSnWnziEocaB_pU");
+Geocode.setApiKey(process.env.REACT_APP_GOOGLE_PLACES_KEY);
 
 // set response language. Defaults to english.
 Geocode.setLanguage("en");
@@ -115,7 +115,7 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
       <div className={styles.dateWrapper}>
         <Controller
           as={<DateInput labelText="Date" />}
-          name={`date`}
+          name="date"
           type="date"
           min={null}
           max={null}
@@ -123,8 +123,7 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
         />
         <Controller
           as={<DateInput time labelText="Time" type="time" />}
-          name={`time`}
-          defaultValue=""
+          name="time"
           min={null}
           max={null}
           control={control}
