@@ -4,12 +4,12 @@ import {
   addTrackEntry,
   editTrackEntry,
   deleteTrackEntry,
-  addSelected
+  addSelected,
 } from "../../actions";
 import {
   getTrack,
   getSelectedTracks,
-  getFilteredTrackPath
+  getFilteredTrackPath,
 } from "../../selectors";
 import { Button, List, ListItem } from "@wfp/ui";
 import styles from "./styles.module.scss";
@@ -18,7 +18,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTrashAlt,
   faMapMarkerQuestion,
-  faEdit
+  faEdit,
 } from "@fortawesome/pro-solid-svg-icons";
 import moment from "moment";
 import Empty from "../Empty";
@@ -29,14 +29,14 @@ import { NavLink } from "react-router-dom";
 export default function SidebarContent() {
   const [open, setOpen] = useState(false);
 
-  const selectedTracks = useSelector(state => getSelectedTracks(state));
-  const filteredTrackPath = useSelector(state => getFilteredTrackPath(state));
+  const selectedTracks = useSelector((state) => getSelectedTracks(state));
+  const filteredTrackPath = useSelector((state) => getFilteredTrackPath(state));
 
   const dispatch = useDispatch();
-  const addTrackEntryTrigger = data => dispatch(addTrackEntry(data));
-  const editTrackEntryTrigger = data => dispatch(editTrackEntry(data));
-  const addSelectedTrigger = data => dispatch(addSelected(data));
-  const deleteTrackEntryTrigger = data => dispatch(deleteTrackEntry(data));
+  const addTrackEntryTrigger = (data) => dispatch(addTrackEntry(data));
+  const editTrackEntryTrigger = (data) => dispatch(editTrackEntry(data));
+  const addSelectedTrigger = (data) => dispatch(addSelected(data));
+  const deleteTrackEntryTrigger = (data) => dispatch(deleteTrackEntry(data));
 
   const stringStore = CounterComponent();
   return (
@@ -55,8 +55,9 @@ export default function SidebarContent() {
       {filteredTrackPath &&
         filteredTrackPath.map((e, i) => (
           <div
-            className={`${styles.item} ${selectedTracks.includes(e.time) &&
-              styles.selectedItem}`}
+            className={`${styles.item} ${
+              selectedTracks.includes(e.time) && styles.selectedItem
+            }`}
             key={i}
             onClick={() => addSelectedTrigger([e.time])}
           >
@@ -68,6 +69,10 @@ export default function SidebarContent() {
                     {moment.utc(e.time).format("HH:mm:ss")}
                   </span>
                 </h3>
+
+                <p className={styles.subTitle}>
+                  {e.street} {e.other} {e.postal} {e.town}
+                </p>
 
                 <List kind="simple" colon small>
                   <ListItem title="Latitude">{e.latitude}</ListItem>

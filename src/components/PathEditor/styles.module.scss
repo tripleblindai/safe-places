@@ -4,6 +4,37 @@
   flex: 1;
   overflow: auto;
 }
+
+.selectCase {
+  padding: $spacing-md;
+}
+
+.folder {
+  padding: $spacing-md;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid $ui-04;
+}
+
+.folderTitle {
+  @include typescale(delta);
+  a {
+    text-decoration: none;
+  }
+}
+
+.folderSubTitle {
+  @include typescale(caption);
+  color: $text-02;
+}
+
+.folderButtons {
+  display: flex;
+  >* {
+    margin-left: $spacing-xs;
+  }
+}
+
 .header {
   display: flex;
   text-align: left;

@@ -25,6 +25,10 @@
 
 .title {
   @include typescale("delta");
+}
+
+.subTitle {
+  @include typescale("zeta");
   margin-bottom: $spacing-xs;
 }
 

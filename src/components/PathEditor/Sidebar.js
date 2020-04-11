@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "@wfp/ui";
+import { Button, tooltipStyle, tooltipStyleDark } from "@wfp/ui";
 import Dropzone from "./Dropzone";
 import SidebarContent from "../SidebarContent";
 import FileSaver, { saveAs } from "file-saver";
@@ -12,23 +12,68 @@ import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSave,
-  faArrowAltToBottom,
-  faPlusCircle
+  faCaretDown,
+  faPlusCircle,
 } from "@fortawesome/pro-solid-svg-icons";
 import { addTrackEntry } from "../../actions";
 import EntryForm from "../EntryForm";
+import SelectCase from "../SelectCase";
 import { NavLink } from "react-router-dom";
+import Tippy from "@tippy.js/react";
 
 function Sidebar({ addTrackEntryTrigger, track }) {
   const [openNewEntry, setOpenNewEntry] = useState(false);
   const save = () => {
     var blob = new Blob([JSON.stringify(track)], {
-      type: "text/plain;charset=utf-8"
+      type: "text/plain;charset=utf-8",
     });
     FileSaver.saveAs(blob, `export-${track.publish_date_utl}.txt`);
   };
   return (
     <>
+      <div className={styles.folder}>
+        <div>
+          <h2 className={styles.folderTitle}>
+            <a href={track.info_website}>{track.authority_name}</a>
+          </h2>
+          <p className={styles.folderSubTitle}>
+            {moment.utc(track.publish_date_utl).format("YYYY-MM-DD HH:mm:ss")}
+          </p>
+        </div>
+        <div className={styles.folderButtons}>
+          <div>
+            <Tippy
+              // options
+              content={
+                <div>
+                  <Dropzone />
+                  <Button
+                    onClick={save}
+                    iconReverse
+                    icon={<FontAwesomeIcon icon={faSave} />}
+                  >
+                    Save
+                  </Button>
+                </div>
+              }
+              trigger="click"
+              {...tooltipStyle}
+            >
+              <div>
+                <Button
+                  kind="secondary"
+                  icon={<FontAwesomeIcon icon={faCaretDown} />}
+                >
+                  Actions
+                </Button>
+              </div>
+            </Tippy>
+          </div>
+        </div>
+      </div>
+      <div className={styles.selectCase}>
+        <SelectCase />
+      </div>
       <div className={styles.header}>
         <div className={styles.title}>
           {track.authority_name ? (
@@ -50,7 +95,7 @@ function Sidebar({ addTrackEntryTrigger, track }) {
           )}
         </div>
         <div className={styles.buttons}>
-          <Dropzone />
+          {<Dropzone />}
           <Button
             onClick={save}
             iconReverse
@@ -64,7 +109,7 @@ function Sidebar({ addTrackEntryTrigger, track }) {
         <DateSlider />
       </div>
       <div className={styles.toolbar}>
-        <NavLink to="/?edit=true">
+        <NavLink to="/?edit=new">
           <Button
             kind="secondary"
             icon={<FontAwesomeIcon icon={faPlusCircle} />}
@@ -85,15 +130,15 @@ function Sidebar({ addTrackEntryTrigger, track }) {
   );
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
     selectedTracks: getSelectedTracks(state),
-    track: getTrack(state)
+    track: getTrack(state),
   };
 };
 
-const mapDispatchToProps = dispatch => ({
-  addTrackEntryTrigger: data => dispatch(addTrackEntry(data))
+const mapDispatchToProps = (dispatch) => ({
+  addTrackEntryTrigger: (data) => dispatch(addTrackEntry(data)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Sidebar);

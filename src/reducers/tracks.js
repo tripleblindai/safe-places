@@ -8,7 +8,7 @@ import {
   CLEAR_ALL,
   CLEAR_COMPLETED,
   ADD_SELECTED_ENTRY,
-  ADD_TRACK_ENTRY
+  ADD_TRACK_ENTRY,
 } from "../constants/ActionTypes";
 
 import arrayMove from "array-move";
@@ -23,23 +23,27 @@ export default function todos(state = initialState, action) {
 
     case DELETE_TRACK_ENTRY:
       const concern_points = state.concern_points.filter(
-        e => e.time !== action.data
+        (e) => e.time !== action.data
       );
       console.log("state", concern_points);
       return { ...state, concern_points };
 
     case EDIT_TRACK_ENTRY:
       const newPoints = state.concern_points;
-      const editPoint = newPoints.findIndex(
-        e => e.time === action.initialData.time
-      );
 
-      console.log("state", state, action, editPoint);
-      newPoints[editPoint] = action.data;
+      if (action.initialData) {
+        const editPoint = newPoints.findIndex(
+          (e) => e.time === action.initialData.time
+        );
+        newPoints[editPoint] = action.data;
+      } else {
+        newPoints.push(action.data);
+      }
+
       return { ...state, concern_points: newPoints };
 
     case MOVE_TRACK_ENTRY:
-      const findIndex = state.findIndex(e => e.time !== action.time);
+      const findIndex = state.findIndex((e) => e.time !== action.time);
       const points = arrayMove(
         state.concern_points,
         findIndex,

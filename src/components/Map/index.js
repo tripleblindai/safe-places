@@ -244,6 +244,7 @@ function Map({ addSelectedTrigger, trackPath }) {
   }, [trackPath]);
 
   const onMapClick = e => {
+    console.log(e);
     var bbox = [
       [e.point[0] - 1, e.point[1] - 1],
       [e.point[0] + 1, e.point[1] + 1]

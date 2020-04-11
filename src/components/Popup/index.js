@@ -35,14 +35,14 @@ const PopupWrapper = ({ addSelectedTrigger, selectedTracksData }) => {
   return null;
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
-    selectedTracksData: getSelectedTracksData(state)
+    selectedTracksData: getSelectedTracksData(state),
   };
 };
 
-const mapDispatchToProps = dispatch => ({
-  addSelectedTrigger: data => dispatch(addSelected(data))
+const mapDispatchToProps = (dispatch) => ({
+  addSelectedTrigger: (data) => dispatch(addSelected(data)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(PopupWrapper);

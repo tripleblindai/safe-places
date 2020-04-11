@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { connect, useDispatch } from "react-redux";
 import { addTrackEntry, editTrackEntry } from "../../actions";
@@ -13,11 +13,14 @@ import {
   faCrosshairs,
   faMapMarkerQuestion,
   faCross,
-  faTimes
+  faTimes,
+  faLocationCircle,
 } from "@fortawesome/pro-solid-svg-icons";
 import DateInput from "../DateInput";
 import styles from "./styles.module.scss";
 import { NavLink } from "react-router-dom";
+import moment from "moment";
+import FakeTextInput from "../FakeTextInput";
 // set Google Maps Geocoding API for purposes of quota management. Its optional but recommended.
 Geocode.setApiKey(process.env.REACT_APP_GOOGLE_PLACES_KEY);
 
@@ -32,49 +35,68 @@ Geocode.setRegion("es");
 Geocode.enableDebug();
 
 const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
+  const [load, setLoad] = useState(false);
   const methods = useForm({
-    defaultValues: initialData
+    defaultValues: initialData,
   });
 
-  const { control, getValues, setValue, reset, handleSubmit } = methods;
+  const {
+    control,
+    errors,
+    getValues,
+    setValue,
+    reset,
+    handleSubmit,
+    register,
+  } = methods;
 
   const dispatch = useDispatch();
   let history = useHistory();
 
-  useEffect(() => {
-    reset(initialData);
-  }, [initialData]);
-
   const location = useLocation();
 
-  console.log("location", location.search);
-  /*if (!location.search.includes("edit")) {
+  useEffect(() => {
+    console.log("location.search", location.search);
+    var initialDataManipulated = {};
+    if (!location.search.includes("new") && initialData) {
+      initialDataManipulated = JSON.parse(JSON.stringify(initialData));
+      initialDataManipulated.date = moment(initialDataManipulated.time).format(
+        "YYYY-MM-DD"
+      );
+      initialDataManipulated.time = moment(initialDataManipulated.time).format(
+        "hh:mm"
+      );
+    }
+
+    reset(initialDataManipulated);
+  }, [initialData, location.search]);
+
+  if (!location.search.includes("edit")) {
     return null;
-  }*/
+  }
 
   // Get address from latidude & longitude.
   const fromLatLng = () => {
     const values = getValues();
     Geocode.fromLatLng(values.latitude, values.longitude).then(
-      response => {
-        const search = code => {
-          const find = components.find(e => e.types.includes(code));
+      (response) => {
+        const search = (code) => {
+          const find = components.find((e) => e.types.includes(code));
           return find ? find.long_name : "";
         };
-        const address = response.results[0].formatted_address;
         const components = response.results[0].address_components;
         console.log(response.results[0].address_components);
         setValue([
           {
-            street: `${search("route")} ${search("street_number")}`
+            street: `${search("route")} ${search("street_number")}`,
           },
           {
-            postal: search("postal_code")
+            postal: search("postal_code"),
           },
-          { town: search("locality") }
+          { town: search("locality") },
         ]);
       },
-      error => {
+      (error) => {
         console.error(error);
       }
     );
@@ -84,33 +106,36 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
     const values = getValues();
     const address = `${values.street} ${values.other} ${values.town} ${values.postal}`;
     Geocode.fromAddress(address).then(
-      response => {
+      (response) => {
         const { lat, lng } = response.results[0].geometry.location;
         console.log(lat, lng);
 
         setValue([
           {
-            latitude: lat
+            latitude: lat,
           },
           {
-            longitude: lng
-          }
+            longitude: lng,
+          },
         ]);
       },
 
-      error => {
+      (error) => {
         console.error(error);
       }
     );
   };
 
-  const onSubmit = values => {
+  const onSubmit = (values) => {
     console.log(values);
-
+    values.time = moment(`${values.date} ${values.time}`).valueOf();
+    values.latitude = parseFloat(values.latitude);
+    values.longitude = parseFloat(values.longitude);
     dispatch(editTrackEntry(values, initialData));
     history.push("/");
   };
 
+  if (load) return null;
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
       <div className={styles.header}>
@@ -141,45 +166,57 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
       </div>
 
       <div className={styles.position}>
-        <Controller
-          as={<TextInput labelText="Latitude" />}
+        <TextInput
+          labelText="Latitude"
           name="latitude"
-          control={control}
+          invalidText="Invalid latitude"
+          invalid={errors.longitude}
+          inputRef={register({
+            validate: (value) => {
+              const parseValue = parseFloat(value);
+              return (
+                !isNaN(parseValue) && parseValue >= -90 && parseValue <= 90
+              );
+            },
+          })}
         />
-        <Controller
-          as={<TextInput labelText="Longitude" />}
+        <TextInput
+          labelText="Longitude"
           name="longitude"
-          control={control}
+          invalidText="Invalid longitude"
+          invalid={errors.longitude}
+          inputRef={register({
+            validate: (value) => {
+              const parseValue = parseFloat(value);
+              return (
+                !isNaN(parseValue) && parseValue >= -180 && parseValue <= 180
+              );
+            },
+          })}
         />
+
         <Button
+          className={styles.pickButton}
           onClick={fromLatLng}
           icon={<FontAwesomeIcon icon={faCrosshairs} />}
+        ></Button>
+        <Button
+          onClick={fromLatLng}
+          icon={<FontAwesomeIcon icon={faLocationCircle} />}
         ></Button>
       </div>
 
       <div className={styles.address}>
         <div className={styles.streetWrapper}>
-          <Controller
-            as={<TextInput labelText="Street" />}
-            name="street"
-            control={control}
-          />
-          <Controller
-            as={<TextInput labelText="other" />}
-            name="other"
-            control={control}
-          />
+          <TextInput labelText="Street" name="street" inputRef={register} />
+          <TextInput labelText="Other" name="other" inputRef={register} />
         </div>
         <div className={styles.townWrapper}>
-          <Controller
-            as={<TextInput labelText="Town" />}
-            name="town"
-            control={control}
-          />
-          <Controller
-            as={<TextInput labelText="Postal code" />}
+          <TextInput labelText="Town" name="town" inputRef={register} />
+          <TextInput
+            labelText="Postal code"
             name="postal"
-            control={control}
+            inputRef={register}
           />
           <Button
             onClick={fromAddress}
@@ -190,8 +227,7 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
       <div className={styles.commentWrapper}>
         <Controller
           as={<TextArea labelText="Comment" />}
-          name={`comment`}
-          defaultValue=""
+          name="comment"
           control={control}
         />
       </div>
@@ -201,15 +237,15 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
   );
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
     selectedTracks: getSelectedTracks(state),
-    track: getTrack(state)
+    track: getTrack(state),
   };
 };
 
-const mapDispatchToProps = dispatch => ({
-  addTrackEntryTrigger: data => dispatch(addTrackEntry(data))
+const mapDispatchToProps = (dispatch) => ({
+  addTrackEntryTrigger: (data) => dispatch(addTrackEntry(data)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EntryForm);
