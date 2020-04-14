@@ -1,6 +1,7 @@
-{ "authority_name":  "Steve's Fake Testing Organization",
+{
+  "authority_name":  "Example Health Authority for Testing",
   "publish_date_utc": "1584924583",
-  "info_website": "https://www.who.int/emergencies/diseases/novel-coronavirus-2019",
+  "info_website": "https://raw.githack.com/tripleblindmarket/safe-places/develop/examples/portal.html",
   "concern_points":
    [
      { "time": 123, "latitude": 12.34, "longitude": 12.34},
