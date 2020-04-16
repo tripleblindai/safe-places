@@ -27,18 +27,14 @@ function Sidebar({ addTrackEntryTrigger, track }) {
     var blob = new Blob([JSON.stringify(track)], {
       type: "text/plain;charset=utf-8",
     });
-    FileSaver.saveAs(blob, `export-${track.publish_date_utl}.txt`);
+    FileSaver.saveAs(blob, `export-${track.publish_date_utl}.json`);
   };
   return (
     <>
       <div className={styles.folder}>
         <div>
-          <h2 className={styles.folderTitle}>
-            <a href={track.info_website}>{track.authority_name}</a>
-          </h2>
-          <p className={styles.folderSubTitle}>
-            {moment.utc(track.publish_date_utl).format("YYYY-MM-DD HH:mm:ss")}
-          </p>
+          <h2 className={styles.folderTitle}>Sample organization local data</h2>
+          <p className={styles.folderSubTitle}>Data for lorem ipsum</p>
         </div>
         <div className={styles.folderButtons}>
           <div>
@@ -78,9 +74,9 @@ function Sidebar({ addTrackEntryTrigger, track }) {
         <div className={styles.title}>
           {track.authority_name ? (
             <>
-              <h2>
+              {/*}h2>
                 <a href={track.info_website}>{track.authority_name}</a>
-              </h2>
+          </h2>*/}
               <p>
                 {moment
                   .utc(track.publish_date_utl)
@@ -95,7 +91,15 @@ function Sidebar({ addTrackEntryTrigger, track }) {
           )}
         </div>
         <div className={styles.buttons}>
-          {<Dropzone />}
+          <Dropzone />
+          <NavLink to="/?edit=new">
+            <Button
+              kind="secondary"
+              icon={<FontAwesomeIcon icon={faPlusCircle} />}
+            >
+              Add Entry
+            </Button>
+          </NavLink>
           <Button
             onClick={save}
             iconReverse
@@ -108,7 +112,7 @@ function Sidebar({ addTrackEntryTrigger, track }) {
       <div className={styles.filter}>
         <DateSlider />
       </div>
-      <div className={styles.toolbar}>
+      {/*<div className={styles.toolbar}>
         <NavLink to="/?edit=new">
           <Button
             kind="secondary"
@@ -116,8 +120,8 @@ function Sidebar({ addTrackEntryTrigger, track }) {
           >
             Add Entry
           </Button>
-        </NavLink>
-      </div>
+          </NavLink>
+      </div>*/}
       {openNewEntry && (
         <div className={styles.newForm}>
           <EntryForm />

@@ -7,13 +7,13 @@
 
 .selectCase {
   padding: $spacing-md;
+  border-bottom: 1px solid $ui-04;
 }
 
 .folder {
   padding: $spacing-md;
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px solid $ui-04;
 }
 
 .folderTitle {
@@ -39,6 +39,7 @@
   display: flex;
   text-align: left;
   padding: $spacing-md;
+  background: $ui-03;
   border-bottom: 1px solid $ui-04;
   h2 {
     @include typescale("gamma");
@@ -59,6 +60,9 @@
 
 .buttons {
   display: flex;
+  >* {
+    margin-left: $spacing-xs;
+  }
   @media print {
     display: none;
   }

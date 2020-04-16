@@ -3,3 +3,12 @@
 .select {
     font-size: 1.4rem;
 }
+
+.title {
+    @include typescale("epsilon");
+}
+
+.subTitle {
+    color: $text-02;
+    @include typescale("caption");
+}

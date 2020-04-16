@@ -7,13 +7,13 @@ import storage from "redux-persist/lib/storage"; // defaults to localStorage for
 import reducer from "./reducers";
 
 const rootReducer = combineReducers({
-  reducer
+  reducer,
 });
 
 const persistConfig = {
   key: "root",
   storage,
-  timeout: 1
+  timeout: 1,
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
