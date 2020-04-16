@@ -27,3 +27,11 @@ Tool to combind and publish redacted time/location data files.  Intended for use
 
 NOTE: The app requires a Google Maps Javascript API key to work fully
 <img src="examples/Publishing_Tool_screenshot.png">
+
+## Running in a Docker container
+To be able to run the the Safe-Places Web tool in a container follow the following steps.
+To build : 
+docker build -t safe-places:latest .
+To run : 
+docker run --rm -it -p 8080:80 safe-places:latest
+Open you browser and load the url http://localhost:8080 
