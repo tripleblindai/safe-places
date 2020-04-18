@@ -34,9 +34,9 @@ To be able to run the the Safe-Places Web tool in a container follow the followi
 
 Build Container : 
 
-    docker build -t safe-places:latest 
+    docker build -t safe-places:latest .
 
-Run Conatiner :
+Run Container :
 
     docker run --rm -it -p 8080:80 safe-places:latest
 
