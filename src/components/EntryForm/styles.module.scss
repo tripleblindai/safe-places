@@ -30,11 +30,17 @@
   width: 2rem;
   height: 2rem;
   display: flex;
+  background: none;
+  font-size: 1.2rem;
+  color: $interactive-01;
   padding: 0 !important;
   border-radius: 30px;
   position: relative;
   top: -0.5em;
   right: -0.5em;
+  &:hover {
+    background: none;
+  }
 }
 
 .pickButton {

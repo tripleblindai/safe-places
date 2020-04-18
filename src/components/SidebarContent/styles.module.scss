@@ -6,6 +6,8 @@
 .item {
   padding: $spacing-md;
   border-bottom: 1px solid $ui-04;
+  display: flex;
+  align-items: center;
   cursor: pointer;
   &:hover {
     .buttons {
@@ -14,8 +16,15 @@
   }
 }
 
+.checkbox {
+  flex: inherit;
+  margin-right: 1em;
+}
+
 .itemInner {
   display: flex;
+  flex: 1;
+  width: 100%;
   justify-content: space-between;
 }
 

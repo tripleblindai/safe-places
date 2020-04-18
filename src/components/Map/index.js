@@ -3,7 +3,8 @@ import ReactMapGL from "react-map-gl";
 import Track from "./trackPath";
 import { token } from "../../constants/mapbox";
 import { connect } from "react-redux";
-import { deleteTrackEntry, addSelected } from "../../actions";
+import { deleteTrackEntry } from "../../reducers/tracks";
+import { addSelected } from "../../actions";
 import { getFilteredTrackPath } from "../../selectors";
 import track from "./trackPath";
 import { fromJS } from "immutable";
@@ -23,8 +24,8 @@ const currentPointLayer = {
     "circle-color": "#0f7eff",
     "circle-radius": 7,
     "circle-stroke-width": 3,
-    "circle-stroke-color": "#ffffff"
-  }
+    "circle-stroke-color": "#ffffff",
+  },
 };
 
 const selectedPointLayerAccuracy = {
@@ -41,13 +42,13 @@ const selectedPointLayerAccuracy = {
       0,
       0,
       20,
-      ["*", 20, ["get", "accuracy"]]
+      ["*", 20, ["get", "accuracy"]],
     ],
     "circle-opacity": 0.2,
     "circle-stroke-width": 0,
-    "circle-stroke-color": "#ffffff"
+    "circle-stroke-color": "#ffffff",
   },
-  filter: ["in", "storeId", "5cdaca36bab5e21e9ee19344"]
+  filter: ["in", "storeId", "5cdaca36bab5e21e9ee19344"],
 };
 
 const currentPointLayerAccuracy = {
@@ -64,12 +65,12 @@ const currentPointLayerAccuracy = {
       0,
       0,
       20,
-      ["*", 20, ["get", "accuracy"]]
+      ["*", 20, ["get", "accuracy"]],
     ],
     "circle-opacity": 0.2,
     "circle-stroke-width": 0,
-    "circle-stroke-color": "#ffffff"
-  }
+    "circle-stroke-color": "#ffffff",
+  },
 };
 
 const currentPointLayerShadow = {
@@ -84,8 +85,8 @@ const currentPointLayerShadow = {
     "circle-opacity": 0.5,
     "circle-blur": 1,
     "circle-stroke-width": 0,
-    "circle-stroke-color": "#ffffff"
-  }
+    "circle-stroke-color": "#ffffff",
+  },
 };
 
 const pointLayer = {
@@ -101,10 +102,10 @@ const pointLayer = {
       ["get", "storeId"],
       "5cdaca36bab5e21e9ee19344",
       "#fbb03b",
-      /* other */ "#165078"
+      /* other */ "#165078",
     ],
-    "circle-radius": 5
-  }
+    "circle-radius": 5,
+  },
   //filter: ['in', 'storeId', '5cdaca36bab5e21e9ee19344']
 };
 
@@ -120,8 +121,8 @@ const pointLayerShadow = {
     "circle-opacity": 0.3,
     "circle-blur": 0.6,
     "circle-stroke-width": 0,
-    "circle-stroke-color": "#ffffff"
-  }
+    "circle-stroke-color": "#ffffff",
+  },
 };
 
 const lineLayer = {
@@ -130,7 +131,7 @@ const lineLayer = {
   source: "lines",
   layout: {
     "line-join": "round",
-    "line-cap": "round"
+    "line-cap": "round",
   },
   paint: {
     "line-width": 3,
@@ -142,21 +143,21 @@ const lineLayer = {
       0,
       "#0065D9",
       1,
-      "#00D9FF"
-    ]
-  }
+      "#00D9FF",
+    ],
+  },
 };
 
 const emptyFeature = {
   type: "geojson",
   data: {
     features: [],
-    type: "FeatureCollection"
-  }
+    type: "FeatureCollection",
+  },
 };
 
 defaultMapStyle = defaultMapStyle
-  .updateIn(["layers"], arr =>
+  .updateIn(["layers"], (arr) =>
     arr.push(
       lineLayer,
       currentPointLayerAccuracy,
@@ -180,8 +181,8 @@ defaultMapStyle = defaultMapStyle
       type: "geojson",
       data: {
         features: [],
-        type: "FeatureCollection"
-      }
+        type: "FeatureCollection",
+      },
     })
   )
   .setIn(["sources", "points"], fromJS(emptyFeature));
@@ -193,7 +194,7 @@ function Map({ addSelectedTrigger, trackPath }) {
     height: 300,
     latitude: 37.7577,
     longitude: -122.4376,
-    zoom: 8
+    zoom: 8,
   });
   const mapRef = useRef();
 
@@ -202,7 +203,7 @@ function Map({ addSelectedTrigger, trackPath }) {
   useEffect(() => {
     //if (!trackPath) return null;
     const historyMapData = track({
-      trackPath: trackPath
+      trackPath: trackPath,
     });
     var zooming = {};
 
@@ -226,32 +227,32 @@ function Map({ addSelectedTrigger, trackPath }) {
       if (bounds && mapObject) {
         zooming = new WebMercatorViewport({
           width: mapRef.current._width, //mapObject.offsetWidth,
-          height: mapRef.current._height //mapObject.offsetHeight
+          height: mapRef.current._height, //mapObject.offsetHeight
         }).fitBounds(bounds, {
           padding: 50,
-          offset: [0, 0]
+          offset: [0, 0],
         });
       }
 
       const viewportCalc = {
         ...viewport,
         ...zooming,
-        transitionDuration: 500
+        transitionDuration: 500,
       };
 
       setViewport(viewportCalc);
     }
   }, [trackPath]);
 
-  const onMapClick = e => {
+  const onMapClick = (e) => {
     console.log(e);
     var bbox = [
       [e.point[0] - 1, e.point[1] - 1],
-      [e.point[0] + 1, e.point[1] + 1]
+      [e.point[0] + 1, e.point[1] + 1],
     ];
 
     var features = mapRef.current.queryRenderedFeatures(bbox, {
-      layers: ["pointLayer"]
+      layers: ["pointLayer"],
     });
 
     console.log("map clicked", mapRef.current, features);
@@ -275,7 +276,7 @@ function Map({ addSelectedTrigger, trackPath }) {
       width="100%"
       height="100vh"
       onClick={onMapClick}
-      onViewportChange={viewportInternal => setViewport(viewportInternal)}
+      onViewportChange={(viewportInternal) => setViewport(viewportInternal)}
     >
       <Popup />
       <Track />
@@ -283,15 +284,15 @@ function Map({ addSelectedTrigger, trackPath }) {
   );
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
-    trackPath: getFilteredTrackPath(state)
+    trackPath: getFilteredTrackPath(state),
   };
 };
 
-const mapDispatchToProps = dispatch => ({
-  addSelectedTrigger: data => dispatch(addSelected(data)),
-  deleteTrackEntryTrigger: data => dispatch(deleteTrackEntry(data))
+const mapDispatchToProps = (dispatch) => ({
+  addSelectedTrigger: (data) => dispatch(addSelected(data)),
+  deleteTrackEntryTrigger: (data) => dispatch(deleteTrackEntry(data)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Map);

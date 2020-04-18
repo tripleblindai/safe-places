@@ -12,17 +12,17 @@ const track = ({ trackPath }) => {
     return {
       type: "Feature",
       properties: {
-        time: point.time
+        time: point.time,
       },
       geometry: {
         type: "Point",
-        coordinates: [point.longitude, point.latitude]
-      }
+        coordinates: [point[1].longitude, point[1].latitude],
+      },
     };
   });
 
-  const lines = trackPath.map(point => {
-    return [point.longitude, point.latitude];
+  const lines = trackPath.map((point) => {
+    return [point[1].longitude, point[1].latitude];
   });
 
   return {
@@ -34,15 +34,15 @@ const track = ({ trackPath }) => {
           properties: {},
           geometry: {
             type: "LineString",
-            coordinates: lines
-          }
-        }
-      ]
+            coordinates: lines,
+          },
+        },
+      ],
     },
     points: {
       type: "FeatureCollection",
-      features: points
-    }
+      features: points,
+    },
   };
 };
 

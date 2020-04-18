@@ -13,8 +13,8 @@ const PopupWrapper = ({ addSelectedTrigger, selectedTracksData }) => {
       <Popup
         tipSize={8}
         anchor="bottom"
-        longitude={selectedTracksData[0].longitude}
-        latitude={selectedTracksData[0].latitude}
+        longitude={selectedTracksData[0][1].longitude}
+        latitude={selectedTracksData[0][1].latitude}
         closeOnClick={false}
         closeButton={false}
         offsetTop={-10}
@@ -22,10 +22,10 @@ const PopupWrapper = ({ addSelectedTrigger, selectedTracksData }) => {
       >
         <div className={styles.popup}>
           <h3 className={styles.title}>
-            {moment.utc(selectedTracksData[0].time).format("YYYY-MM-DD")}
+            {moment.utc(selectedTracksData[0][1].time).format("YYYY-MM-DD")}
           </h3>
           <p className={styles.time}>
-            {moment.utc(selectedTracksData[0].time).format("HH:mm:ss")}
+            {moment.utc(selectedTracksData[0][1].time).format("HH:mm:ss")}
           </p>
         </div>
       </Popup>

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { connect, useDispatch } from "react-redux";
-import { addTrackEntry, editTrackEntry } from "../../actions";
+import { addTrackEntry, editTrackEntry } from "../../reducers/tracks";
 import { getTrack, getSelectedTracks } from "../../selectors";
 import { Button, TextArea, TextInput } from "@wfp/ui";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useParams, useLocation, useHistory } from "react-router";
+import { useParams, useHistory } from "react-router";
 import Geocode from "react-geocode";
 
 import {
@@ -53,12 +53,11 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
   const dispatch = useDispatch();
   let history = useHistory();
 
-  const location = useLocation();
+  const params = useParams();
 
   useEffect(() => {
-    console.log("location.search", location.search);
     var initialDataManipulated = {};
-    if (!location.search.includes("new") && initialData) {
+    if (params.action !== "new" && initialData) {
       initialDataManipulated = JSON.parse(JSON.stringify(initialData));
       initialDataManipulated.date = moment(initialDataManipulated.time).format(
         "YYYY-MM-DD"
@@ -69,9 +68,9 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
     }
 
     reset(initialDataManipulated);
-  }, [initialData, location.search]);
+  }, [initialData, params.page]);
 
-  if (!location.search.includes("edit")) {
+  if (params.page !== "edit") {
     return null;
   }
 

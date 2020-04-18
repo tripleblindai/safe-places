@@ -13,7 +13,7 @@ function App() {
     <div className="App">
       <Router history={history}>
         <Switch>
-          <Route exact path="/" component={PathEditor} />
+          <Route path="/:page?/:action?" component={PathEditor} />
         </Switch>
       </Router>
     </div>

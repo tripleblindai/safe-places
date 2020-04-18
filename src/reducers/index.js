@@ -7,19 +7,17 @@ import selectedTracks from "./selectedTracks";
 import filter from "./filter";
 import tracks from "./tracks";
 import report from "./report";
-import infections from "./infections";
 import caseRed from "./case";
 
 const rootReducer = combineReducers({
   caseRed,
   detail,
-  infections,
   positions,
   warnings,
   filter,
   tracks,
   selectedTracks,
-  report
+  report,
 });
 
 export default rootReducer;

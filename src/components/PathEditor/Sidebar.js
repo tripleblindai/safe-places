@@ -15,7 +15,7 @@ import {
   faCaretDown,
   faPlusCircle,
 } from "@fortawesome/pro-solid-svg-icons";
-import { addTrackEntry } from "../../actions";
+import { addTrackEntry } from "../../reducers/tracks";
 import EntryForm from "../EntryForm";
 import SelectCase from "../SelectCase";
 import { NavLink } from "react-router-dom";
@@ -39,7 +39,7 @@ function Sidebar({ addTrackEntryTrigger, track }) {
         <div className={styles.folderButtons}>
           <div>
             <Tippy
-              // options
+              interactive
               content={
                 <div>
                   <Dropzone />
@@ -67,9 +67,9 @@ function Sidebar({ addTrackEntryTrigger, track }) {
           </div>
         </div>
       </div>
-      <div className={styles.selectCase}>
+      {/*<div className={styles.selectCase}>
         <SelectCase />
-      </div>
+            </div>*/}
       <div className={styles.header}>
         <div className={styles.title}>
           {track.authority_name ? (
@@ -91,15 +91,17 @@ function Sidebar({ addTrackEntryTrigger, track }) {
           )}
         </div>
         <div className={styles.buttons}>
-          <Dropzone />
-          <NavLink to="/?edit=new">
+          <NavLink to="/edit/new">
             <Button
               kind="secondary"
+              iconReverse
               icon={<FontAwesomeIcon icon={faPlusCircle} />}
             >
               Add Entry
             </Button>
           </NavLink>
+          <Dropzone />
+
           <Button
             onClick={save}
             iconReverse
@@ -122,6 +124,7 @@ function Sidebar({ addTrackEntryTrigger, track }) {
           </Button>
           </NavLink>
       </div>*/}
+      <div></div>
       {openNewEntry && (
         <div className={styles.newForm}>
           <EntryForm />

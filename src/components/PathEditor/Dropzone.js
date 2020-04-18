@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { addTrack, generateWarnings } from "../../actions";
+import { addTrack, generateWarnings } from "../../reducers/tracks";
 //import { getAllTracks } from "../../selectors";
 import { connect } from "react-redux";
 import { Button } from "@wfp/ui";
@@ -8,8 +8,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolderPlus } from "@fortawesome/pro-solid-svg-icons";
 
 function MyDropzone({ addTrackTrigger }) {
-  const onDrop = useCallback(acceptedFiles => {
-    acceptedFiles.forEach(file => {
+  const onDrop = useCallback((acceptedFiles) => {
+    acceptedFiles.forEach((file) => {
       const reader = new FileReader();
 
       reader.onabort = () => console.log("file reading was aborted");
@@ -35,14 +35,14 @@ function MyDropzone({ addTrackTrigger }) {
   );
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
     // track: getAllTracks(state)
   };
 };
 
-const mapDispatchToProps = dispatch => ({
-  addTrackTrigger: data => dispatch(addTrack(data))
+const mapDispatchToProps = (dispatch) => ({
+  addTrackTrigger: (data) => dispatch(addTrack(data)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(MyDropzone);

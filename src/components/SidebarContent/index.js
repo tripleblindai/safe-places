@@ -4,14 +4,15 @@ import {
   addTrackEntry,
   editTrackEntry,
   deleteTrackEntry,
-  addSelected,
-} from "../../actions";
+} from "../../reducers/tracks";
+
+import { addSelected } from "../../actions";
 import {
   getTrack,
   getSelectedTracks,
   getFilteredTrackPath,
 } from "../../selectors";
-import { Button, List, ListItem } from "@wfp/ui";
+import { Button, Checkbox, List, ListItem } from "@wfp/ui";
 import styles from "./styles.module.scss";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -51,27 +52,45 @@ export default function SidebarContent() {
           Please open a file
         </Empty>
       )}
-      {/* Loaded: {JSON.stringify(track)} */}
       {filteredTrackPath &&
         filteredTrackPath.map((e, i) => (
           <div
             className={`${styles.item} ${
-              selectedTracks.includes(e.time) && styles.selectedItem
+              selectedTracks.includes(e[0]) && styles.selectedItem
             }`}
             key={i}
-            onClick={() => addSelectedTrigger([e.time])}
           >
-            <div className={styles.itemInner}>
+            <Checkbox
+              wrapperClassName={styles.checkbox}
+              name={`checkbox-${e[0]}`}
+              onChange={(f) => {
+                console.log("aaaa", f);
+
+                if (f === false) {
+                  console.log("remove", selectedTracks, e[0]);
+                  const newSelect = selectedTracks;
+                  newSelect.splice(newSelect.indexOf(e[0]), 1);
+                  addSelectedTrigger([...newSelect]);
+                } else {
+                  addSelectedTrigger([...selectedTracks, e[0]]);
+                }
+              }}
+              checked={selectedTracks.includes(e[0])}
+            />
+            <div
+              className={styles.itemInner}
+              onClick={() => addSelectedTrigger([e[0]])}
+            >
               <div>
                 <h3 className={styles.title}>
-                  {moment.utc(e.time).format("YYYY-MM-DD")}
+                  {moment.utc(e[1].time).format("YYYY-MM-DD")}
                   <span className={styles.time}>
-                    {moment.utc(e.time).format("HH:mm:ss")}
+                    {moment.utc(e[1].time).format("HH:mm:ss")}
                   </span>
                 </h3>
 
                 <p className={styles.subTitle}>
-                  {e.street} {e.other} {e.postal} {e.town}
+                  {e[1].street} {e[1].other} {e[1].postal} {e[1].town}
                 </p>
 
                 <List kind="simple" colon small>
@@ -81,7 +100,7 @@ export default function SidebarContent() {
               </div>
 
               <div className={styles.buttons}>
-                <NavLink to="?edit=true">
+                <NavLink to={`/edit/${e[0]}`}>
                   <Button
                     kind="primary"
                     icon={<FontAwesomeIcon icon={faEdit} />}

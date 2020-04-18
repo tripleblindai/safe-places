@@ -1,6 +1,61 @@
 @import "../../scss/global";
 
+.handleText {
+  color: $ui-01;
+  background: $text-01;
+  white-space: nowrap;
+  position: absolute;
+  font-size: 0.6rem;
+  top: -2rem;
+  left: -10px;
+  padding: 0.3rem;
+  border-radius: 5px;
+  &:after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 10px;
+    transform: rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background: $text-01;
+  }
+}
+
+.rangeWrapper {
+  margin-left: $spacing-md;
+  margin-top: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.showFilter {
+  display: flex;
+  white-space: nowrap;
+  margin-top: $spacing-md;
+  > * {
+    margin-right: 1rem;
+  }
+}
+
+/*[class="rc-slider-handle-2"] {
+  background: green;
+  .handleText {
+    right: 0;
+    background: blue;
+  }
+}*/
+
 :global {
+  .rc-slider-handle-2 {
+    > * {
+      left: initial;
+      right: -10px;
+      &:after {
+        left: initial;
+        right: 10px;
+      }
+    }
+  }
   $prefixClass: rc-slider;
 
   $disabledColor: #ccc;

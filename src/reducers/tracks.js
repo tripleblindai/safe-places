@@ -3,22 +3,22 @@ import {
   DELETE_TRACK_ENTRY,
   MOVE_TRACK_ENTRY,
   EDIT_TRACK_ENTRY,
-  COMPLETE_WARNING,
-  COMPLETE_ALL_WARNINGS,
-  CLEAR_ALL,
-  CLEAR_COMPLETED,
-  ADD_SELECTED_ENTRY,
   ADD_TRACK_ENTRY,
 } from "../constants/ActionTypes";
+import { v4 } from "uuid";
 
 import arrayMove from "array-move";
 
 const initialState = [];
 
-export default function todos(state = initialState, action) {
-  console.log("dispatch called", action);
+export default function tracks(state = initialState, action) {
   switch (action.type) {
     case ADD_TRACK:
+      action.data.points = {};
+      action.data.concern_points.forEach((element) => {
+        action.data.points[v4()] = element;
+      });
+
       return action.data;
 
     case DELETE_TRACK_ENTRY:
@@ -56,30 +56,36 @@ export default function todos(state = initialState, action) {
       pointsAdd.push({ latitude: 0, longitude: 0, time: 2132321 });
       return { ...state, concern_points: pointsAdd };
 
-    /* case EDIT_WARNING:
-      return state.map(todo =>
-        todo.id === action.id ? { ...todo, text: action.text } : todo
-      );
-
-    case COMPLETE_WARNING:
-      return state.map(todo =>
-        todo.id === action.id ? { ...todo, completed: !todo.completed } : todo
-      );
-
-    case COMPLETE_ALL_WARNINGS:
-      const areAllMarked = state.every(todo => todo.completed);
-      return state.map(todo => ({
-        ...todo,
-        completed: !areAllMarked
-      }));
-
-    case CLEAR_COMPLETED:
-      return state.filter(todo => todo.completed === false);
-
-    case CLEAR_ALL:
-      return initialState;*/
-
     default:
       return state;
   }
 }
+
+export const editTrackEntry = (data, initialData) => {
+  return {
+    type: EDIT_TRACK_ENTRY,
+    data,
+    initialData,
+  };
+};
+
+export const deleteTrackEntry = (data) => {
+  return {
+    type: DELETE_TRACK_ENTRY,
+    data,
+  };
+};
+
+export const addTrackEntry = (data) => {
+  return {
+    type: ADD_TRACK_ENTRY,
+    data,
+  };
+};
+
+export const addTrack = (data) => {
+  return {
+    type: ADD_TRACK,
+    data,
+  };
+};
