@@ -29,18 +29,14 @@ export default function tracks(state = initialState, action) {
       return { ...state, concern_points };
 
     case EDIT_TRACK_ENTRY:
-      const newPoints = state.concern_points;
-
-      if (action.initialData) {
-        const editPoint = newPoints.findIndex(
-          (e) => e.time === action.initialData.time
-        );
-        newPoints[editPoint] = action.data;
+      const newPoints = state.points;
+      if (action.id !== "new") {
+        newPoints[action.id] = action.data;
       } else {
-        newPoints.push(action.data);
+        newPoints[v4()] = action.data;
       }
 
-      return { ...state, concern_points: newPoints };
+      return { ...state, points: newPoints };
 
     case MOVE_TRACK_ENTRY:
       const findIndex = state.findIndex((e) => e.time !== action.time);
@@ -61,11 +57,11 @@ export default function tracks(state = initialState, action) {
   }
 }
 
-export const editTrackEntry = (data, initialData) => {
+export const editTrackEntry = (data, id) => {
   return {
     type: EDIT_TRACK_ENTRY,
     data,
-    initialData,
+    id,
   };
 };
 

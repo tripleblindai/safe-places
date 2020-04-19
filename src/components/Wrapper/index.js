@@ -6,8 +6,6 @@ import { useParams } from "react-router";
 
 export default function Wrapper({ children, editor, sidebar }) {
   const params = useParams();
-  console.log(params);
-
   return (
     <div
       className={`${styles.wrapper} ${

@@ -130,7 +130,7 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
     values.time = moment(`${values.date} ${values.time}`).valueOf();
     values.latitude = parseFloat(values.latitude);
     values.longitude = parseFloat(values.longitude);
-    dispatch(editTrackEntry(values, initialData));
+    dispatch(editTrackEntry(values, params.action));
     history.push("/");
   };
 
@@ -231,7 +231,9 @@ const EntryForm = ({ addTrackEntryTrigger, initialData }) => {
         />
       </div>
 
-      <Button type="submit">{initialData ? "Update" : "Add to tracks"}</Button>
+      <Button type="submit">
+        {params.action !== "new" ? "Update" : "Add to tracks"}
+      </Button>
     </form>
   );
 };

@@ -2008,10 +2008,10 @@
   dependencies:
     natives "^1.1.6"
 
-"@wfp/ui@^1.4.1-alpha.35":
-  version "1.4.1-alpha.35"
-  resolved "https://registry.yarnpkg.com/@wfp/ui/-/ui-1.4.1-alpha.35.tgz#3268d7eeb8b015719266a1d1d1effef3b3938729"
-  integrity sha512-Fb1sOg2z3ddynjz876tIjO9Z9GoNZ7JJWiqwxwdutpZ7+MsXBRrEX68F1d4Q0C1/TkB6vEJgdHyw5yi5X+ZH7Q==
+"@wfp/ui@^1.4.1-alpha.36":
+  version "1.4.1-alpha.36"
+  resolved "https://registry.yarnpkg.com/@wfp/ui/-/ui-1.4.1-alpha.36.tgz#3cb1838fa3e834fc3bd3f2729a234bc96237d85e"
+  integrity sha512-DpDmyMlMB9Fwi+NzP1We61M1+OgZpSuQJlcOAUeO/HsroCUTlxGf9zUeNEzwr5MfMtwxfIscf7wXlf3aaR6ftQ==
   dependencies:
     classnames "2.2.6"
     invariant "^2.2.3"

@@ -1,5 +1,5 @@
 {
-  "name": "webapp",
+  "name": "safeplaces",
   "version": "0.1.0",
   "private": true,
   "homepage": "./",
@@ -16,7 +16,7 @@
     "@types/react-redux": "^7.1.7",
     "@types/react-router-dom": "^5.1.3",
     "@wfp/icons": "^0.0.82",
-    "@wfp/ui": "^1.4.1-alpha.35",
+    "@wfp/ui": "^1.4.1-alpha.36",
     "array-move": "^2.2.1",
     "env-cmd": "^10.1.0",
     "file-saver": "^2.0.2",

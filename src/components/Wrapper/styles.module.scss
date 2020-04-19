@@ -18,7 +18,7 @@
 
 .wrapperEdit {
   .editor {
-    transform: translateX(31vw);
+    transform: translateX(500px);
   }
   .content {
     //transform: translateX(10vw);
@@ -26,7 +26,7 @@
 }
 
 .sidebar {
-  width: 30vw;
+  width: 500px;
   background: $ui-01;
   box-shadow: 3px 3px 7px rgba(#000, 0.05);
   position: relative;

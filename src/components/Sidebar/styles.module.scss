@@ -1,0 +1,100 @@
+@import "../../scss/global";
+
+.sidebarContent {
+  flex: 1;
+  overflow: auto;
+}
+
+.selectCase {
+  padding: $spacing-md;
+  border-bottom: 1px solid $ui-04;
+}
+
+.folder {
+  padding: $spacing-md;
+  display: flex;
+  justify-content: space-between;
+}
+
+.folderTitle {
+  @include typescale(delta);
+  a {
+    text-decoration: none;
+  }
+}
+
+.folderSubTitle {
+  @include typescale(caption);
+  color: $text-02;
+}
+
+.settingsButtons {
+  display: flex;
+  > * {
+    margin-left: $spacing-xs;
+  }
+}
+
+.settingsList {
+  padding: $spacing-xs;
+  border-bottom: 1px solid $ui-03;
+  > a {
+    text-decoration: none;
+  }
+}
+
+.header {
+  display: flex;
+  text-align: left;
+  padding: $spacing-md;
+  background: $ui-03;
+  border-bottom: 1px solid $ui-04;
+  h2 {
+    @include typescale("gamma");
+    a {
+      text-decoration: none;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+  p {
+    color: $text-02;
+  }
+  div {
+    margin-right: 0.3em;
+  }
+}
+
+.buttons {
+  display: flex;
+  > * {
+    margin-left: $spacing-xs;
+  }
+  @media print {
+    display: none;
+  }
+}
+
+.title {
+  flex: 1;
+}
+
+.filter {
+  padding: $spacing-md;
+  background: $ui-02;
+  border-bottom: 1px solid $ui-04;
+}
+
+.toolbar {
+  padding: $spacing-md;
+  background: $ui-02;
+  border-bottom: 1px solid $ui-04;
+  > * {
+    margin-right: $spacing-3xs;
+  }
+}
+
+.newForm {
+  padding: $spacing-md;
+}

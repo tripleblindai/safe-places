@@ -1,28 +1,36 @@
 import React, { useState } from "react";
-import { Button, tooltipStyle, tooltipStyleDark } from "@wfp/ui";
-import Dropzone from "./Dropzone";
-import SidebarContent from "../SidebarContent";
+import { Button, tooltipStyle } from "@wfp/ui";
+import Dropzone from "../PathEditor/Dropzone";
+import SidebarContent from "../SidebarEntry";
 import FileSaver, { saveAs } from "file-saver";
 
-import { getTrack, getSelectedTracks } from "../../selectors";
+import {
+  getTrack,
+  getSelectedTracks,
+  getFilteredTrackPath,
+} from "../../selectors";
 import styles from "./styles.module.scss";
-import { connect } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import DateSlider from "../DateSlider";
 import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSave,
   faCaretDown,
+  faCheckCircle,
+  faTimesCircle,
   faPlusCircle,
 } from "@fortawesome/pro-solid-svg-icons";
 import { addTrackEntry } from "../../reducers/tracks";
 import EntryForm from "../EntryForm";
-import SelectCase from "../SelectCase";
 import { NavLink } from "react-router-dom";
 import Tippy from "@tippy.js/react";
+import { addSelected } from "../../actions";
 
 function Sidebar({ addTrackEntryTrigger, track }) {
   const [openNewEntry, setOpenNewEntry] = useState(false);
+  const dispatch = useDispatch();
+  const filteredTrackPath = useSelector((state) => getFilteredTrackPath(state));
   const save = () => {
     var blob = new Blob([JSON.stringify(track)], {
       type: "text/plain;charset=utf-8",
@@ -101,26 +109,39 @@ function Sidebar({ addTrackEntryTrigger, track }) {
       <div className={styles.toolbar}>
         <NavLink to="/edit/new">
           <Button
-            kind="secondary"
             iconReverse
+            small
             icon={<FontAwesomeIcon icon={faPlusCircle} />}
           >
             Add Entry
           </Button>
         </NavLink>
         <Button
-          kind="secondary"
           iconReverse
+          small
           icon={<FontAwesomeIcon icon={faPlusCircle} />}
         >
           Delete selected
         </Button>
         <Button
-          kind="secondary"
           iconReverse
-          icon={<FontAwesomeIcon icon={faPlusCircle} />}
+          small
+          icon={<FontAwesomeIcon icon={faCheckCircle} />}
+          onClick={() => {
+            dispatch(addSelected(filteredTrackPath.map((e) => e[0])));
+          }}
         >
-          Select all
+          all
+        </Button>
+        <Button
+          iconReverse
+          small
+          icon={<FontAwesomeIcon icon={faTimesCircle} />}
+          onClick={() => {
+            dispatch(addSelected([]));
+          }}
+        >
+          none
         </Button>
       </div>
       <div></div>
