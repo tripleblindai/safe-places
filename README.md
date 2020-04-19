@@ -1,43 +1,44 @@
-# Safe Places
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-A toolkit for public health, built on top of data shared by users of [Private Kit](https://github.com/tripleblindmarket/private-kit)
+## Available Scripts
 
-## Server
+In the project directory, you can run:
 
-A server implementation can be easily built to host these tools.  See how in the [Server API documentation](Safe-Places-Server.md).
+### `yarn start`
 
-## Tools
+Runs the app in the development mode.<br />
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-### [Location Viewer/Scrubber](https://raw.githack.com/tripleblindmarket/safe-places/master/location-scrubber/index.html)
+The page will reload if you make edits.<br />
+You will also see any lint errors in the console.
 
-Tool to visualize and redact time/location data.  Intended for use in Contact Tracing.
+### `yarn test`
 
-* Input: JSON exported/shared from Private Kit.
-* Output: Redacted JSON of time/location data.
+Launches the test runner in the interactive watch mode.<br />
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-NOTE: The app requires a Google Maps Javascript API key to work fully
-<img src="examples/Redaction_Tool_screenshot.png">
+### `yarn build`
 
-### [Publisher](https://raw.githack.com/tripleblindmarket/safe-places/master/publisher/index.html)
+Builds the app for production to the `build` folder.<br />
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-Tool to combind and publish redacted time/location data files.  Intended for use by Healthcare Authorities.
+The build is minified and the filenames include the hashes.<br />
+Your app is ready to be deployed!
 
-* Input: Redacted JSON time/location files.
-* Output: `safe-paths.json` -- a file ready for posting on a webserver to be consumed by Private Kit : Safe Paths
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-NOTE: The app requires a Google Maps Javascript API key to work fully
-<img src="examples/Publishing_Tool_screenshot.png">
+### `yarn eject`
 
-## Running in a Docker container
+**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
 
-To be able to run the the Safe-Places Web tool in a container follow the following steps. 
+If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Build Container : 
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
 
-    docker build -t safe-places:latest 
+You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
-Run Conatiner :
+## Learn More
 
-    docker run --rm -it -p 8080:80 safe-places:latest
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-Open you browser and load the url [http://localhost:8080](http://localhost:8080/ "http://localhost:8080")
+To learn React, check out the [React documentation](https://reactjs.org/).

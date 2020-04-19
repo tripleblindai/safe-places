@@ -1,0 +1,62 @@
+@import "../../scss/global";
+
+.newForm {
+  padding: $spacing-md;
+}
+.item {
+  padding: $spacing-md;
+  border-bottom: 1px solid $ui-04;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  &:hover {
+    .buttons {
+      opacity: 1;
+    }
+  }
+}
+
+.checkbox {
+  flex: inherit;
+  margin-right: 1em;
+}
+
+.itemInner {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.selectedItem {
+  background: $ui-03;
+}
+
+.title {
+  @include typescale("delta");
+}
+
+.subTitle {
+  @include typescale("zeta");
+  margin-bottom: $spacing-xs;
+}
+
+.editForm {
+  border-top: 1px solid $ui-04;
+  padding-top: 1em;
+}
+.buttons {
+  opacity: 0;
+  > * {
+    margin-left: $spacing-xs;
+  }
+  @media print {
+    display: none;
+  }
+}
+
+.time {
+  color: $text-02;
+  font-weight: normal;
+  margin-left: $spacing-xs;
+}

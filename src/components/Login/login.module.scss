@@ -1,0 +1,102 @@
+@import "../../scss/global";
+
+.login {
+  display: flex;
+  height: 100vh;
+}
+
+.password {
+  margin-left: $spacing-xs;
+}
+
+.loginForm {
+  display: flex;
+
+  flex-direction: column;
+  @include breakpointMax(bp--md--major) {
+    width: 100%;
+    padding: 5vw;
+  }
+
+  @include breakpoint(bp--md--major) {
+    width: 38vw;
+    padding: 7vw;
+
+    form {
+      width: 100%;
+      flex-grow: 1;
+      margin-top: 12vh;
+    }
+  }
+  [class="page-title"] {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: $spacing-xl;
+    @include breakpointMax(bp--md--major) {
+      margin-bottom: $spacing-md;
+    }
+  }
+  [class="wfp--form-item"] {
+    margin-bottom: $spacing-lg;
+  }
+}
+
+.button {
+  display: flex;
+}
+
+.submitWrapper {
+  display: flex;
+  align-items: center;
+}
+.backLink {
+  margin-bottom: 2rem;
+}
+
+.loginLogo {
+  @include breakpointMax(bp--md--major) {
+    display: none;
+  }
+  /*margin-bottom: 2rem;
+  margin-top: 20%;
+  margin-left: 20%;*/
+  //margin-bottom: -30%;
+  svg {
+    width: 8vmin;
+    height: auto;
+  }
+  path {
+    fill: $brand-01;
+  }
+}
+
+.loginContent {
+  @include breakpointMax(bp--md--major) {
+    display: none;
+  }
+  color: $ui-01;
+  background: $brand-01;
+  width: 62vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  overflow: hidden;
+  img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+  }
+  h2 {
+    width: 60%;
+    font-size: 3rem;
+    font-weight: 800;
+  }
+  p {
+    font-size: 1.2rem;
+    margin-top: 1.4rem;
+    padding-right: 5rem;
+    line-height: 2rem;
+    width: 60%;
+  }
+}
