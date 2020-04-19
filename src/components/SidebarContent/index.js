@@ -94,8 +94,8 @@ export default function SidebarContent() {
                 </p>
 
                 <List kind="simple" colon small>
-                  <ListItem title="Latitude">{e.latitude}</ListItem>
-                  <ListItem title="Longitude">{e.longitude}</ListItem>
+                  <ListItem title="Latitude">{e[1].latitude}</ListItem>
+                  <ListItem title="Longitude">{e[1].longitude}</ListItem>
                 </List>
               </div>
 

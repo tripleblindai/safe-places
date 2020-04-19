@@ -14,7 +14,7 @@ export default function PathEditor() {
     <Wrapper
       editor={
         <EntryForm
-          initialData={selectedTracksData && selectedTracksData[0][1]}
+          initialData={selectedTracksData[0] && selectedTracksData[0][1]}
         />
       }
       sidebar={<Sidebar />}

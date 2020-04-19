@@ -28,10 +28,18 @@
   color: $text-02;
 }
 
-.folderButtons {
+.settingsButtons {
   display: flex;
-  >* {
+  > * {
     margin-left: $spacing-xs;
+  }
+}
+
+.settingsList {
+  padding: $spacing-xs;
+  border-bottom: 1px solid $ui-03;
+  > a {
+    text-decoration: none;
   }
 }
 
@@ -60,7 +68,7 @@
 
 .buttons {
   display: flex;
-  >* {
+  > * {
     margin-left: $spacing-xs;
   }
   @media print {

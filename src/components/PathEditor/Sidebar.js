@@ -36,20 +36,13 @@ function Sidebar({ addTrackEntryTrigger, track }) {
           <h2 className={styles.folderTitle}>Sample organization local data</h2>
           <p className={styles.folderSubTitle}>Data for lorem ipsum</p>
         </div>
-        <div className={styles.folderButtons}>
+        <div className={styles.settingsButtons}>
           <div>
             <Tippy
               interactive
               content={
-                <div>
-                  <Dropzone />
-                  <Button
-                    onClick={save}
-                    iconReverse
-                    icon={<FontAwesomeIcon icon={faSave} />}
-                  >
-                    Save
-                  </Button>
+                <div className={styles.settingsList}>
+                  <NavLink to="/settings">Settings</NavLink>
                 </div>
               }
               trigger="click"
@@ -91,15 +84,6 @@ function Sidebar({ addTrackEntryTrigger, track }) {
           )}
         </div>
         <div className={styles.buttons}>
-          <NavLink to="/edit/new">
-            <Button
-              kind="secondary"
-              iconReverse
-              icon={<FontAwesomeIcon icon={faPlusCircle} />}
-            >
-              Add Entry
-            </Button>
-          </NavLink>
           <Dropzone />
 
           <Button
@@ -114,16 +98,31 @@ function Sidebar({ addTrackEntryTrigger, track }) {
       <div className={styles.filter}>
         <DateSlider />
       </div>
-      {/*<div className={styles.toolbar}>
-        <NavLink to="/?edit=new">
+      <div className={styles.toolbar}>
+        <NavLink to="/edit/new">
           <Button
             kind="secondary"
+            iconReverse
             icon={<FontAwesomeIcon icon={faPlusCircle} />}
           >
             Add Entry
           </Button>
-          </NavLink>
-      </div>*/}
+        </NavLink>
+        <Button
+          kind="secondary"
+          iconReverse
+          icon={<FontAwesomeIcon icon={faPlusCircle} />}
+        >
+          Delete selected
+        </Button>
+        <Button
+          kind="secondary"
+          iconReverse
+          icon={<FontAwesomeIcon icon={faPlusCircle} />}
+        >
+          Select all
+        </Button>
+      </div>
       <div></div>
       {openNewEntry && (
         <div className={styles.newForm}>
