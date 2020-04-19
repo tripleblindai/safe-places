@@ -1,12 +1,9 @@
 import React from "react";
 import Select, { components } from "react-select";
 import styles from "./styles.module.scss";
-
-const options = [
-  { value: "chocolate", label: "Journey of user xy" },
-  { value: "strawberry", label: "Strawberry" },
-  { value: "vanilla", label: "Vanilla" },
-];
+import { showPatients } from "../../reducers/patients";
+import { useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
 
 const SingleValue = ({ children, ...props }) => (
   <components.SingleValue {...props}>
@@ -24,12 +21,21 @@ const customStyles = {
 };
 
 export default function SelectCase() {
+  const patients = useSelector((state) => showPatients(state));
+  const history = useHistory();
+
+  const options = Object.entries(patients).map((e) => {
+    return { value: e[0], label: e[0] };
+  });
+
+  options.push({ value: "all", label: "all cases" });
   return (
     <Select
       className={styles.select}
       options={options}
       styles={customStyles}
       components={{ SingleValue }}
+      onChange={(e) => history.push(`/${e.value}`)}
     />
   );
 }

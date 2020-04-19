@@ -6,9 +6,9 @@ import storage from "redux-persist/lib/storage"; // defaults to localStorage for
 
 import reducer from "./reducers";
 
-const rootReducer = combineReducers({
+/*const rootReducer = combineReducers({
   reducer,
-});
+});*/
 
 const persistConfig = {
   key: "root",
@@ -16,7 +16,7 @@ const persistConfig = {
   timeout: 1,
 };
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistedReducer = persistReducer(persistConfig, reducer);
 
 // create the saga middleware
 const sagaMiddleware = createSagaMiddleware();

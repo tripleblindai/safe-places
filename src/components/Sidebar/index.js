@@ -26,6 +26,7 @@ import EntryForm from "../EntryForm";
 import { NavLink } from "react-router-dom";
 import Tippy from "@tippy.js/react";
 import { addSelected } from "../../actions";
+import SelectCase from "../SelectCase";
 
 function Sidebar({ addTrackEntryTrigger, track }) {
   const [openNewEntry, setOpenNewEntry] = useState(false);
@@ -68,9 +69,9 @@ function Sidebar({ addTrackEntryTrigger, track }) {
           </div>
         </div>
       </div>
-      {/*<div className={styles.selectCase}>
+      <div className={styles.selectCase}>
         <SelectCase />
-            </div>*/}
+      </div>
       <div className={styles.header}>
         <div className={styles.title}>
           {track.authority_name ? (
@@ -107,7 +108,7 @@ function Sidebar({ addTrackEntryTrigger, track }) {
         <DateSlider />
       </div>
       <div className={styles.toolbar}>
-        <NavLink to="/edit/new">
+        <NavLink to="/patient/edit/new">
           <Button
             iconReverse
             small

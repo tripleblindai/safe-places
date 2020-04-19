@@ -12,7 +12,8 @@
   position: absolute;
   z-index: 3;
   width: 25vw;
-  margin-top: 1vw;
+  margin-top: $spacing-md;
+  margin-left: $spacing-md;
   transition: all 0.15s;
 }
 
@@ -27,6 +28,7 @@
 
 .sidebar {
   width: 500px;
+  min-width: 500px;
   background: $ui-01;
   box-shadow: 3px 3px 7px rgba(#000, 0.05);
   position: relative;
@@ -41,7 +43,7 @@
 }
 
 .content {
-  width: 70vw;
+  flex: 1;
   transition: all 0.2s;
   @media print {
     width: 100%;

@@ -1,46 +1,46 @@
 export const getCurrentStore = (state, ownProps) =>
-  state.reducer.stores.find((e) => e.client_id === ownProps.route.item);
+  state.stores.find((e) => e.client_id === ownProps.route.item);
 export const getAllPositions = (state) => state.positions;
 export const getAllWarnings = (state) => state.warnings;
 export const getDetail = (state) => state.detail;
-export const getTrack = (state) => state.reducer.tracks;
-export const getFilter = (state) => state.reducer.filter;
+export const getTrack = (state) => state.tracks;
+export const getFilter = (state) => state.filter;
 export const getTrackPath = (state) =>
-  state.reducer.tracks && state.reducer.tracks.points
-    ? Object.values(state.reducer.tracks.points).sort(function (a, b) {
+  state.tracks && state.tracks.points
+    ? Object.values(state.tracks.points).sort(function (a, b) {
         return a.time - b.time;
       })
     : [];
 
 export const getFilteredTrackPath = (state) =>
-  state.reducer.tracks && state.reducer.tracks.points
-    ? Object.entries(state.reducer.tracks.points)
+  state.tracks && state.tracks.points
+    ? Object.entries(state.tracks.points)
         .sort(function (a, b) {
           return a[1].time - b[1].time;
         })
         .filter(
           (e) =>
-            e[1].time >= state.reducer.filter.dates[0] &&
-            e[1].time <= state.reducer.filter.dates[1]
+            e[1].time >= state.filter.dates[0] &&
+            e[1].time <= state.filter.dates[1]
         )
     : [];
 
 export const getTrackStart = (state) =>
-  state.reducer.tracks &&
-  state.reducer.tracks.points &&
+  state.tracks &&
+  state.tracks.points &&
   Math.min.apply(
     Math,
-    Object.values(state.reducer.tracks.points).map(function (o) {
+    Object.values(state.tracks.points).map(function (o) {
       return o.time;
     })
   );
 
 export const getTrackEnd = (state) =>
-  state.reducer.tracks &&
-  state.reducer.tracks.points &&
+  state.tracks &&
+  state.tracks.points &&
   Math.max.apply(
     Math,
-    Object.values(state.reducer.tracks.points).map(function (o) {
+    Object.values(state.tracks.points).map(function (o) {
       return o.time;
     })
   );
@@ -68,17 +68,17 @@ export const getAllFilteredWarnings = (state) => {
   return filteredWarnings;
 };
 
-export const getSelectedTracksData = ({ reducer }) => {
+export const getSelectedTracksData = ({ selectedTracks, tracks }) => {
   const selectedEntries =
-    reducer.tracks && reducer.tracks.points && reducer.selectedTracks
-      ? Object.entries(reducer.tracks.points).filter((e) => {
-          return e[0] === reducer.selectedTracks[0];
+    tracks && tracks.points && selectedTracks
+      ? Object.entries(tracks.points).filter((e) => {
+          return e[0] === selectedTracks[0];
         })
       : undefined;
   return selectedEntries;
 };
 
-export const getSelectedTracks = (state) => state.reducer.selectedTracks;
+export const getSelectedTracks = (state) => state.selectedTracks;
 export const countFilteredWarnings = (state) => {
   const filteredWarnings = state.warnings.filter(
     (e) => e.matches && e.matches.length >= 1

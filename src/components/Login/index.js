@@ -15,21 +15,21 @@ import { Link } from "react-router-dom";
 import getEnvVars from "data-handler/environment";
 const { apiUrl } = getEnvVars();
 
-const Login = props => {
+const Login = (props) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
   const methods = useForm({
-    defaultValues: prepareForm()
+    defaultValues: prepareForm(),
   });
 
   const { control, handleSubmit, errors } = methods;
 
-  const onSubmit = async values => {
+  const onSubmit = async (values) => {
     setLoading(true);
     return axios
       .post(`${apiUrl}/auth/login/`, qs.stringify(values))
-      .then(response => {
+      .then((response) => {
         if (response.data && response.data.token) {
           console.log("response", response, values.password);
           Auth.authenticateUser(response.data, values.password);
@@ -75,7 +75,7 @@ const Login = props => {
             defaultValue=""
             control={control}
             rules={{
-              required: "Required"
+              required: "Required",
             }}
           />
           <Controller
@@ -117,17 +117,17 @@ const Login = props => {
   );
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
-    fetching: state.reducer.fetching,
-    schools: state.reducer.schools,
-    error: state.reducer.error
+    fetching: state.fetching,
+    schools: state.schools,
+    error: state.error,
   };
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
   return {
-    disableLogout: () => dispatch({ type: "LOGOUT", data: false })
+    disableLogout: () => dispatch({ type: "LOGOUT", data: false }),
   };
 };
 

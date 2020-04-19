@@ -2,7 +2,7 @@ import { combineReducers } from "redux";
 
 import detail from "./detail";
 import positions from "./positions";
-import warnings from "./warnings";
+import patients from "./patients";
 import selectedTracks from "./selectedTracks";
 import filter from "./filter";
 import tracks from "./tracks";
@@ -13,7 +13,7 @@ const rootReducer = combineReducers({
   caseRed,
   detail,
   positions,
-  warnings,
+  patients,
   filter,
   tracks,
   selectedTracks,

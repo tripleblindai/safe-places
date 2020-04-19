@@ -9,7 +9,7 @@ export default class Auth {
     Store().store.dispatch({
       type: "LOGIN",
       data: userData,
-      password: password
+      password: password,
     });
     return true;
   };
@@ -50,7 +50,7 @@ export let PrivateRoute = ({ component: Component, logout, ...rest }) => {
   return (
     <Route
       {...rest}
-      render={props =>
+      render={(props) =>
         Auth.isUserAuthenticated() &&
         Auth.isUserLocalAuthenticated() &&
         logout !== true ? (
@@ -61,14 +61,14 @@ export let PrivateRoute = ({ component: Component, logout, ...rest }) => {
           <Redirect
             to={{
               pathname: "/locallogin/",
-              state: { from: props.location }
+              state: { from: props.location },
             }}
           />
         ) : (
           <Redirect
             to={{
               pathname: "/login/",
-              state: { from: props.location }
+              state: { from: props.location },
             }}
           />
         )
@@ -77,9 +77,9 @@ export let PrivateRoute = ({ component: Component, logout, ...rest }) => {
   );
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
-    auth: state.reducer.auth
+    auth: state.auth,
   };
 };
 

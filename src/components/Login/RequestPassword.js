@@ -23,23 +23,23 @@ import { NavLink } from "react-router-dom/cjs/react-router-dom";
 import InputWrapper from "components/InputWrapper";
 const { apiUrl } = getEnvVars();
 
-const RequestPassword = props => {
+const RequestPassword = (props) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
 
   //props.disableLogout();
   const methods = useForm({
-    defaultValues: prepareForm()
+    defaultValues: prepareForm(),
   });
 
   const { control, handleSubmit, errors } = methods;
 
-  const onSubmit = async values => {
+  const onSubmit = async (values) => {
     setLoading(true);
     return axios
       .post(`${apiUrl}/auth/password/reset/`, qs.stringify(values))
-      .then(response => {
+      .then((response) => {
         if (response.data && response.data.detail) {
           setError("Password reset e-mail has been sent.");
           setSuccess(true);
@@ -48,7 +48,7 @@ const RequestPassword = props => {
           setError("Unknown email or phone number. Please verify");
         }
       })
-      .catch(error => {
+      .catch((error) => {
         if (error.response) {
           if (error.response.status === 400) {
             //setError("Enter a valid email or phone number");
@@ -57,8 +57,8 @@ const RequestPassword = props => {
               {
                 type: "required",
                 name: "email",
-                message: error.response.data.errors.email
-              }
+                message: error.response.data.errors.email,
+              },
             ]);
 
             //setError(error.response.data.errors);
@@ -161,7 +161,7 @@ const RequestPassword = props => {
                 defaultValue=""
                 control={control}
                 rules={{
-                  required: "Required"
+                  required: "Required",
                 }}
               />
               <div className={styles.submitWrapper}>
@@ -183,17 +183,17 @@ const RequestPassword = props => {
   );
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
-    fetching: state.reducer.fetching,
-    schools: state.reducer.schools,
-    error: state.reducer.error
+    fetching: state.fetching,
+    schools: state.schools,
+    error: state.error,
   };
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
   return {
-    disableLogout: () => dispatch({ type: "LOGOUT", data: false })
+    disableLogout: () => dispatch({ type: "LOGOUT", data: false }),
   };
 };
 

@@ -15,7 +15,7 @@ function App() {
       <Router history={history}>
         <Switch>
           <Route path="/settings/:action?" component={Settings} />
-          <Route path="/:page?/:action?" component={PathEditor} />
+          <Route path="/:patient?/:page?/:action?" component={PathEditor} />
         </Switch>
       </Router>
     </div>

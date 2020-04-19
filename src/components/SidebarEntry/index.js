@@ -100,7 +100,7 @@ export default function SidebarContent() {
               </div>
 
               <div className={styles.buttons}>
-                <NavLink to={`/edit/${e[0]}`}>
+                <NavLink to={`/patient/edit/${e[0]}`}>
                   <Button
                     kind="primary"
                     icon={<FontAwesomeIcon icon={faEdit} />}
