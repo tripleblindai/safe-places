@@ -61,15 +61,6 @@ if (
     document.head.appendChild(script);
 }
 
-function startupSequence() {
-    // Setup the web UI for whatever login is necessary
-    if (has_backend) {
-        $("#login-panel").show();
-    } else {
-        $("#get-map-api-panel").show();
-    }
-}
-
 var exposurePoints;
 var exposurePaths;
 
