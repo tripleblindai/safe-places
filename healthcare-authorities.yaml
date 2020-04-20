@@ -6,6 +6,7 @@ Authorities:
 
 - Mairie de PAP/MSSP:
   - {url: "https://vault.tripleblind.app/safe_path/5673742378205184/"}
+  - bounds: { "ne": { "latitude": 20.312764055951195, "longitude": -70.45445121262883}, "sw": { "latitude": 17.766025040122642, "longitude": -75.49442923997258}}
 
 - Example Health Authority for Testing:
   - {url: "https://raw.githack.com/tripleblindmarket/safe-places/develop/examples/safe-paths.json"}
