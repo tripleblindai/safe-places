@@ -51,19 +51,23 @@ The maps_api_key is a [Google Maps Javascript API](https://developers.google.com
 
 ## Save Redacted
 
-After a session of redaction, the results are saved to a database/table.
+After a session of redaction, the results are saved to a database/table.  
+*Note*: URL id identifier is user generated.
 
 <table>
-<tr><td>URL:</td>                    <td>/redacted_trail/</td></tr>
-<tr><td>METHOD:</td>                 <td>POST</td></tr>
+<tr><td>URL:</td>                    <td>/redacted_trails/&lt;identifier&gt;</td></tr>
+<tr><td>METHOD:</td>                 <td>PUT</td></tr>
 <tr><td  valign="top">PAYLOAD:</td>  <td>JSON
 
 ```json
 {
-    "identifier":<some random identifier created by user>,
-    "trail":[
-        { "time": 456, "latitude": 12.34, "longitude": 12.34}
-    ]
+  "trail":[
+    {
+      "time": 456,
+      "latitude": 12.34,
+      "longitude": 12.34
+    }
+  ]
 }
 ```
 </td></tr>
@@ -71,17 +75,16 @@ After a session of redaction, the results are saved to a database/table.
 
 ```json
 {
-  "data": {
-    "identifier": "<identifier>",
-    "organization_id": "<organization_id>",
-    "trail": {
+  "identifier": "<identifier>",
+  "organization_id": "<organization_id>",
+  "trail": [
+    {
       "latitude": 12.34,
       "longitude": 12.34,
       "time": 123456789
-    },
-    "user_id": "<user_id>"
-  },
-  "success": true
+    }
+  ],
+  "user_id": "<user_id>"
 }
 ```
 </td></tr>
@@ -102,30 +105,32 @@ Used by the publisher tool, all redaction data is loaded.
 <tr><td  valign="top">RESPONSE:</td>  <td>JSON
 
 ```json
-{
-  "data": [
-    {
-      "identifier": <identifier>,
-      "organization_id": <organization_id>,
-      "trail": {
+[
+  {
+    "identifier": <identifier>,
+    "organization_id": <organization_id>,
+    "trail": [
+      {
+      "latitude": 12.34,
+      "longitude": 12.34,
+      "time": 123456789
+      }
+    ],
+    "user_id": <user_id>
+  },
+  {
+    "identifier": <identifier>,
+    "organization_id": <organization_id>,
+    "trail": [
+      {
         "latitude": 12.34,
         "longitude": 12.34,
         "time": 123456789
-      },
-      "user_id": <user_id>
-    },
-    {
-      "identifier": <identifier>,
-      "organization_id": <organization_id>,
-      "trail": {
-        "latitude": 12.34,
-        "longitude": 12.34,
-        "time": 123456789
-      },
-      "user_id": <user_id>
-    }
-  ]
-}
+      }
+    ],
+    "user_id": <user_id>
+  }
+]
 ```
 </td></tr>
 </table>
@@ -135,21 +140,32 @@ Used by the publisher tool, all redaction data is loaded.
 ## Publish
 
 Used by the Publisher tool, all points are published along with extra information.
+*Note*: URL id identifier is user generated.
 
 <table>
-<tr><td>URL:</td>                    <td>/safe_paths/</td></tr>
-<tr><td>METHOD:</td>                 <td>POST</td></tr>
+<tr><td>URL:</td>                    <td>/safe_paths/&lt;identifier&gt;</td></tr>
+<tr><td>METHOD:</td>                 <td>PUT</td></tr>
 <tr><td  valign="top">PAYLOAD:</td>  <td>JSON
 
 ```json
-{ "authority_name":  "Steve's Fake Testing Organization",
-  "publish_date_utc": "1584924583",
+{
+  "authority_name":  "Steve's Fake Testing Organization",
+  "concern_points": [
+    {
+      "time": 123,
+      "latitude": 12.34,
+      "longitude": 12.34
+    },
+    {
+      "time": 456,
+      "latitude": 12.34,
+      "longitude": 12.34
+    }
+  ],
+  "identifier": "<identifier>",
   "info_website": "https://www.who.int/emergencies/diseases/novel-coronavirus-2019",
-  "concern_points":
-   [
-     { "time": 123, "latitude": 12.34, "longitude": 12.34},
-     { "time": 456, "latitude": 12.34, "longitude": 12.34}
-   ]
+  "organization_id": "<organization_id>",
+  "publish_date_utc": 1584924583
 }
 ```
 </td></tr>
@@ -157,10 +173,8 @@ Used by the Publisher tool, all points are published along with extra informatio
 
 ```json
 {
-  "datetime_created": "Fri, 27 Mar 2020 04:32:12 GMT",
-  "organization_id": <organization_id>,
   "safe_path": {
-    "authority_name": "Fake Organization",
+    "authority_name": "Steve's Fake Testing Organization",
     "concern_points": [
       {
         "latitude": 12.34,
@@ -173,10 +187,13 @@ Used by the Publisher tool, all points are published along with extra informatio
         "time": 456
       }
     ],
+    "datetime_created": 1584924583,
+    "identifier": "<identifier>",
     "info_website": "https://www.something.gov/path/to/info/website",
+    "organization_id": "<organization_id>",
     "publish_date_utc": 1584924583
   },
-  "user_id": <user_id>
+  "user_id": "<user_id>"
 }
 ```
 </td></tr>
@@ -190,7 +207,7 @@ Used by the Publisher tool, all points are published along with extra informatio
 Consumed by the Safe Paths client application.  This requires no authentication.
 
 <table>
-<tr><td>URL:</td>                    <td>/safe_path/&lt;organization_id&gt/</td></tr>
+<tr><td>URL:</td>                    <td>/safe_paths/&lt;organization_id&gt/</td></tr>
 <tr><td>METHOD:</td>                 <td>GET</td></tr>
 <tr><td  valign="top">PAYLOAD:</td>  <td>empty
 </td></tr>
@@ -213,7 +230,7 @@ Consumed by the Safe Paths client application.  This requires no authentication.
       }
     ],
     "info_website": "https://www.something.gov/path/to/info/website",
-    "publish_date_utc": "1584924583"
+    "publish_date_utc": 1584924583
   }
 }
 ```
