@@ -28,6 +28,16 @@ Tool to combind and publish redacted time/location data files.  Intended for use
 NOTE: The app requires a Google Maps Javascript API key to work fully
 <img src="examples/Publishing_Tool_screenshot.png">
 
+
+## Running Locally / Local Development
+
+To run the the Safe-Places Web tool locally for development:
+
+* From the root directory of the project, run `npm install` to install any project dependencies.
+* Run `npm start` to start a simple server to serve the pages.
+
+Open up your preferred browser and view the app at [http://localhost:8009](http://localhost:8009/ "http://localhost:8009")
+
 ## Running in a Docker container
 
 To be able to run the the Safe-Places Web tool in a container follow the following steps. 
