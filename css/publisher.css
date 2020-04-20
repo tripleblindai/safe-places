@@ -20,6 +20,7 @@
     cursor: pointer;
 }
 
+#bounds {
     width: 60%;
     margin-left: 10px;
     padding-bottom: 9px;
