@@ -254,7 +254,10 @@ function doLogin() {
     var username = $("#username").val();
     var password = $("#password").val();
 
-    var res = post("/login/", '{ "username": "' + username + '", "password": "' + password + '" }').then(
+    var res = post(
+        BACKEND_ROOT + "/login/",
+        '{ "username": "' + username + '", "password": "' + password + '" }'
+    ).then(
         function (result) {
             var data = JSON.parse(result);
 

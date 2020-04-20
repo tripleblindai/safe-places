@@ -1,13 +1,5 @@
 // JS code specific to publisher
 
-///////////////////////////////////////
-// Customization!
-
-var has_backend = false; // When true use standard back API calls
-var logo = ""; // Enter a logo for backend
-var logo_text = ""; // Enter name or second graphic
-var logo_destination_url = "";
-
 if (logo) {
     $("#logo").attr("src", logo);
     $("#btn_logo").attr("src", logo);
@@ -42,8 +34,6 @@ $(document).ready(function () {
 
 ///////////////////////////////////////
 // Login
-
-var MAP_API_KEY = localStorage.getItem("MAP_API_KEY");
 
 if (
     !isInitalized(MAP_API_KEY) ||
@@ -265,7 +255,7 @@ function loadPath() {
     if (has_backend) {
         // Load from backend
 
-        const url = "/redacted_trails/";
+        const url = BACKEND_ROOT + "/redacted_trails/";
         fetch(url)
             .then((response) => response.json())
             .then(function (content) {
@@ -597,7 +587,7 @@ function saveText() {
             },
         };
 
-        const url = "/safe_paths/";
+        const url = BACKEND_ROOT + "/safe_paths/";
 
         fetch(url, options)
             .then((response) => response.json())

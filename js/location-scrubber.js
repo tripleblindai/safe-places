@@ -1,13 +1,5 @@
 // JS code specific to location-scrubber
 
-///////////////////////////////////////
-// Customization!
-
-var has_backend = false; // When true use standard back API calls
-var logo = ""; // Enter a logo for backend
-var logo_text = ""; // Enter name or second graphic
-var logo_destination_url = "";
-
 if (logo) {
     $("#logo").attr("src", logo);
     $("#btn_logo").attr("src", logo);
@@ -40,8 +32,6 @@ $(document).ready(function () {
 
 ///////////////////////////////////////
 // Login
-
-var MAP_API_KEY = localStorage.getItem("MAP_API_KEY");
 
 if (
     !isInitalized(MAP_API_KEY) ||
