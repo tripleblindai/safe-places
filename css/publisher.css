@@ -1,0 +1,65 @@
+/* CSS code specific to publisher */
+
+#logo {
+    padding-top: 10;
+    height: 40;
+}
+
+#logo_name {
+    height: 35;
+}
+
+#logo {
+    padding-top: 10;
+    height: 40;
+    cursor: pointer;
+}
+
+#logo_name {
+    height: 35;
+    cursor: pointer;
+}
+
+#bounds {
+    width: 60%;
+    margin-left: 10px;
+    padding-bottom: 9px;
+    margin-bottom: 0;
+}
+
+#save {
+    font-weight: bolder;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.disabled,
+.disabled #save {
+    background-color: #cccccc;
+    color: white;
+    /* grayscale images, etc */
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    -o-filter: grayscale(100%);
+    -ms-filter: grayscale(100%);
+    filter: grayscale(100%);
+}
+
+.example {
+    padding-left: 30px;
+    margin-top: 0;
+    padding-top: 0;
+    font-size: 0.75em;
+    color: cadetblue;
+}
+
+#loadFromServer,
+#loadFromFile {
+    background-color: forestgreen;
+    color: white;
+}
+
+#loadFromServer:hover,
+#loadFromFile:hover {
+    background-color: darkgreen;
+}
