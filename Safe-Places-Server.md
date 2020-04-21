@@ -62,7 +62,7 @@ After a session of redaction, the results are saved to a database/table.
 {
     "identifier":<some random identifier created by user>,
     "trail":[
-        { "time": 456, "latitude": 12.34, "longitude": 12.34}
+        { "time": 123456789, "latitude": 12.34, "longitude": 12.34}
     ]
 }
 ```
@@ -74,11 +74,9 @@ After a session of redaction, the results are saved to a database/table.
   "data": {
     "identifier": "<identifier>",
     "organization_id": "<organization_id>",
-    "trail": {
-      "latitude": 12.34,
-      "longitude": 12.34,
-      "time": 123456789
-    },
+    "trail": [
+        { "time": 123456789, "latitude": 12.34, "longitude": 12.34}
+    ],
     "user_id": "<user_id>"
   },
   "success": true
@@ -107,21 +105,17 @@ Used by the publisher tool, all redaction data is loaded.
     {
       "identifier": <identifier>,
       "organization_id": <organization_id>,
-      "trail": {
-        "latitude": 12.34,
-        "longitude": 12.34,
-        "time": 123456789
-      },
+      "trail": [
+        { "time": 123456789, "latitude": 12.34, "longitude": 12.34}
+      ],
       "user_id": <user_id>
     },
     {
       "identifier": <identifier>,
       "organization_id": <organization_id>,
-      "trail": {
-        "latitude": 12.34,
-        "longitude": 12.34,
-        "time": 123456789
-      },
+      "trail": [{
+        { "time": 123456789, "latitude": 12.34, "longitude": 12.34}
+      ],
       "user_id": <user_id>
     }
   ]
