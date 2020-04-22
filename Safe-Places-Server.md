@@ -1,23 +1,21 @@
 # Safe Places Server
 
 Safe Places can be hosted by a server which implements five basic endpoints.
-The [Redaction Tool](location_scrubber/index.html) and the [Publisher](publisher/index.html) support being served by such a server.  They can be simply modified by changing the value of `has_backend` within the Javascript, then serving them to a browser.  These webapps will automatically operate with the backend which implements this API.
+The [Redaction Tool](location_scrubber/index.html) and the [Publisher](publisher/index.html) support being served by such a server. They can be simply modified by changing the value of `has_backend` within the Javascript, then serving them to a browser. These webapps will automatically operate with the backend which implements this API.
 
-Anyone who implements this API this is should be aware of [healthcare-authorities.yaml](./healthcare-authorities.yaml).  The output of the safe-paths.json endpoint outputs exactly the format expected by a Safe Places client and can be added to that Healthcare Authority registry.
+Anyone who implements this API this is should be aware of [healthcare-authorities.yaml](./healthcare-authorities.yaml). The output of the safe-paths.json endpoint outputs exactly the format expected by a Safe Places client and can be added to that Healthcare Authority registry.
 
-API Endpoints
-=======
+# API Endpoints
 
-* [Login](#login)
-* [Save redacted](#save-redacted)
-* [Load all redacted](#load-all-redacted)
-* [Publish](#publish)
-* [safe-paths.json](#safe-paths.json)
-
+-   [Login](#login)
+-   [Save redacted](#save-redacted)
+-   [Load all redacted](#load-all-redacted)
+-   [Publish](#publish)
+-   [safe-paths.json](#safe-paths.json)
 
 ## Login
 
-This is the beginning of a user interaction with the tool page.  They must be authenticated, but
+This is the beginning of a user interaction with the tool page. They must be authenticated, but
 the authentication will be saved using a cookie for future sessions.
 
 Credentials will be controlled and issued by the server implementor.
@@ -33,6 +31,7 @@ Credentials will be controlled and issued by the server implementor.
     "password": "<password>"
 }
 ```
+
 </td></tr>
 <tr><td  valign="top">RESPONSE:</td>  <td>JSON
 
@@ -44,10 +43,9 @@ Credentials will be controlled and issued by the server implementor.
 ```
 
 The maps_api_key is a [Google Maps Javascript API](https://developers.google.com/maps/documentation/javascript/get-api-key) key.
+
 </td></tr>
 </table>
-
-
 
 ## Save Redacted
 
@@ -62,32 +60,28 @@ After a session of redaction, the results are saved to a database/table.
 {
     "identifier":<some random identifier created by user>,
     "trail":[
-        { "time": 456, "latitude": 12.34, "longitude": 12.34}
+        { "time": 123456789, "latitude": 12.34, "longitude": 12.34}
     ]
 }
 ```
+
 </td></tr>
 <tr><td  valign="top">RESPONSE:</td>  <td>JSON
 
 ```json
 {
-  "data": {
-    "identifier": "<identifier>",
-    "organization_id": "<organization_id>",
-    "trail": {
-      "latitude": 12.34,
-      "longitude": 12.34,
-      "time": 123456789
+    "data": {
+        "identifier": "<identifier>",
+        "organization_id": "<organization_id>",
+        "trail": [{ "time": 123456789, "latitude": 12.34, "longitude": 12.34 }],
+        "user_id": "<user_id>"
     },
-    "user_id": "<user_id>"
-  },
-  "success": true
+    "success": true
 }
 ```
+
 </td></tr>
 </table>
-
-
 
 ## Load All Redacted
 
@@ -107,30 +101,25 @@ Used by the publisher tool, all redaction data is loaded.
     {
       "identifier": <identifier>,
       "organization_id": <organization_id>,
-      "trail": {
-        "latitude": 12.34,
-        "longitude": 12.34,
-        "time": 123456789
-      },
+      "trail": [
+        { "time": 123456789, "latitude": 12.34, "longitude": 12.34}
+      ],
       "user_id": <user_id>
     },
     {
       "identifier": <identifier>,
       "organization_id": <organization_id>,
-      "trail": {
-        "latitude": 12.34,
-        "longitude": 12.34,
-        "time": 123456789
-      },
+      "trail": [
+        { "time": 123456789, "latitude": 12.34, "longitude": 12.34}
+      ],
       "user_id": <user_id>
     }
   ]
 }
 ```
+
 </td></tr>
 </table>
-
-
 
 ## Publish
 
@@ -142,16 +131,17 @@ Used by the Publisher tool, all points are published along with extra informatio
 <tr><td  valign="top">PAYLOAD:</td>  <td>JSON
 
 ```json
-{ "authority_name":  "Steve's Fake Testing Organization",
-  "publish_date_utc": "1584924583",
-  "info_website": "https://www.who.int/emergencies/diseases/novel-coronavirus-2019",
-  "concern_points":
-   [
-     { "time": 123, "latitude": 12.34, "longitude": 12.34},
-     { "time": 456, "latitude": 12.34, "longitude": 12.34}
-   ]
+{
+    "authority_name": "Steve's Fake Testing Organization",
+    "publish_date_utc": "1584924583",
+    "info_website": "https://www.who.int/emergencies/diseases/novel-coronavirus-2019",
+    "concern_points": [
+        { "time": 123, "latitude": 12.34, "longitude": 12.34 },
+        { "time": 456, "latitude": 12.34, "longitude": 12.34 }
+    ]
 }
 ```
+
 </td></tr>
 <tr><td  valign="top">RESPONSE:</td>  <td>JSON
 
@@ -179,15 +169,13 @@ Used by the Publisher tool, all points are published along with extra informatio
   "user_id": <user_id>
 }
 ```
+
 </td></tr>
 </table>
 
-
-
-
 ## safe-paths.json
 
-Consumed by the Safe Paths client application.  This requires no authentication.
+Consumed by the Safe Paths client application. This requires no authentication.
 
 <table>
 <tr><td>URL:</td>                    <td>/safe_path/&lt;organization_id&gt/</td></tr>
@@ -198,26 +186,25 @@ Consumed by the Safe Paths client application.  This requires no authentication.
 
 ```json
 {
-  "data": {
-    "authority_name": "Fake Organization",
-    "concern_points": [
-      {
-        "latitude": 12.34,
-        "longitude": 12.34,
-        "time": 1584924233
-      },
-      {
-        "latitude": 12.34,
-        "longitude": 12.34,
-        "time": 1584924583
-      }
-    ],
-    "info_website": "https://www.something.gov/path/to/info/website",
-    "publish_date_utc": "1584924583"
-  }
+    "data": {
+        "authority_name": "Fake Organization",
+        "concern_points": [
+            {
+                "latitude": 12.34,
+                "longitude": 12.34,
+                "time": 1584924233
+            },
+            {
+                "latitude": 12.34,
+                "longitude": 12.34,
+                "time": 1584924583
+            }
+        ],
+        "info_website": "https://www.something.gov/path/to/info/website",
+        "publish_date_utc": "1584924583"
+    }
 }
 ```
+
 </td></tr>
 </table>
-
-
