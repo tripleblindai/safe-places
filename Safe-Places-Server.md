@@ -192,7 +192,6 @@ Consumed by the Safe Paths client application.  This requires no authentication.
 
 ```json
 {
-  "data": {
     "authority_name": "Fake Organization",
     "concern_points": [
       {
@@ -208,7 +207,6 @@ Consumed by the Safe Paths client application.  This requires no authentication.
     ],
     "info_website": "https://www.something.gov/path/to/info/website",
     "publish_date_utc": "1584924583"
-  }
 }
 ```
 </td></tr>
